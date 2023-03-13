@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -39,8 +40,8 @@ namespace Aula_2___Sockets___Client {
                     string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
                     Console.WriteLine(data);
                 }
-            } catch (Exception e) {
-                Console.WriteLine(e.Message);
+            } catch (IOException e) {
+               
             }
         }
     }
