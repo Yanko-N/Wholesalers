@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aula 2 - Sockets - Client",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aula 2 - Sockets - Server", "Server\Aula 2 - Sockets - Server.csproj", "{141B76A0-A584-4F57-A8B8-8B057E0F1799}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aula 2 - Sockets - WebClient", "WebClient\Aula 2 - Sockets - WebClient.csproj", "{44C5A1A4-10AD-459D-BED0-7C21098F2489}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{141B76A0-A584-4F57-A8B8-8B057E0F1799}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{141B76A0-A584-4F57-A8B8-8B057E0F1799}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{141B76A0-A584-4F57-A8B8-8B057E0F1799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44C5A1A4-10AD-459D-BED0-7C21098F2489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44C5A1A4-10AD-459D-BED0-7C21098F2489}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44C5A1A4-10AD-459D-BED0-7C21098F2489}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44C5A1A4-10AD-459D-BED0-7C21098F2489}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
