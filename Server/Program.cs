@@ -7,7 +7,7 @@ using System.Threading;
 using System.Collections.Concurrent;
 
 class Program {
-    public static readonly object _Lock = new object();
+    public static Mutex mutex = new Mutex();
     static ConcurrentDictionary<TcpClient, Guid> clients = new ConcurrentDictionary<TcpClient, Guid>();
     static void Main(string[] args) {
         //A classe TCPListener implementa os métodos da classe Socket utilizando o protócolo TCP, permitindo uma maior abstração das etapas tipicamente associadas ao Socket.
@@ -27,7 +27,9 @@ class Program {
             //Ciclo infinito para ficar à espera que um cliente Socket/TCP até quando pretender conectar-se
 
             TcpClient client = ServerSocket.AcceptTcpClient();
-            lock (_Lock) clients.TryAdd(client, Guid.NewGuid());
+            mutex.WaitOne();
+            clients.TryAdd(client, Guid.NewGuid());
+            mutex.ReleaseMutex();
             Thread thread = new Thread(() => {
                 Program.MainThread(ServerSocket);
             });
@@ -36,8 +38,9 @@ class Program {
             Console.WriteLine($"{clients[client]} has connected! - {((IPEndPoint)client.Client.RemoteEndPoint).Address}");
             handle_client(client);
             Console.WriteLine($"{clients[client]} has disconnected!");
-            lock (_Lock) clients.TryRemove(client, out _);
-
+            mutex.WaitOne();
+            clients.TryRemove(client, out _);
+            mutex.ReleaseMutex();
         }
     }
 
@@ -66,7 +69,8 @@ class Program {
 
 
     public static void broadcast(TcpClient client, string data) {
-        lock (_Lock) foreach (var c in clients) {
+        mutex.WaitOne();
+        foreach (var c in clients) {
                 NetworkStream stream = c.Key.GetStream();
                 byte[] buffer;
                 if (c.Key == client)
@@ -75,5 +79,6 @@ class Program {
                     buffer = Encoding.ASCII.GetBytes(clients[client] + ": " + data);
                 stream.Write(buffer, 0, buffer.Length);
             }
+        mutex.ReleaseMutex();
     }
 }
