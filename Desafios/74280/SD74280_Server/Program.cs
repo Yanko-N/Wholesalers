@@ -54,6 +54,7 @@ namespace SD74280_Server
                 mutex.ReleaseMutex();
             }
         }
+        
         public static void Data(TcpClient client)
         {
             DateTime date = DateTime.Now;
