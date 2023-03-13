@@ -54,7 +54,12 @@ namespace SD74280_Server
                 mutex.ReleaseMutex();
             }
         }
-
+        
+        public static void Data(TcpClient client)
+        {
+            DateTime date = DateTime.Now;
+            broadcast(client, date.ToString());
+        }
         public static void NumeroAleatorio(TcpClient client)
         {
             Random random = new Random();
@@ -96,7 +101,7 @@ namespace SD74280_Server
                 
                 //Envio da mensagem de confirmação do servidor de volta para o cliente
                 string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
-                NumeroAleatorio(client);
+                Data(client);
                 broadcast(client, data);
                 Console.WriteLine(data);
             }
