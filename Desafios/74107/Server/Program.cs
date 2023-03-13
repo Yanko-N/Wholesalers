@@ -60,7 +60,7 @@ class Program {
             //Envio da mensagem de confirmação do servidor de volta para o cliente
             string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
             //SomarInteiros(client, data);
-            NumeroAleatório(client);
+            NumeroAleatorio(client);
             broadcast(client, data);
             Console.WriteLine(data);
         }
@@ -83,7 +83,7 @@ class Program {
 
     }
 
-    public static void NumeroAleatório(TcpClient client) {
+    public static void NumeroAleatorio(TcpClient client) {
         Random random = new Random();
         NetworkStream stream = client.GetStream();
         byte[] buffer;
