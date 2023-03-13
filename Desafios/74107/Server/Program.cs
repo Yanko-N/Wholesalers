@@ -61,7 +61,7 @@ class Program {
             string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
             //SomarInteiros(client, data);
             //NumeroAleatorio(client);
-            ResponderData(client);
+            //ResponderData(client);
             broadcast(client, data);
             Console.WriteLine(data);
         }
