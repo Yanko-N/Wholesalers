@@ -59,7 +59,9 @@ class Program {
 
             //Envio da mensagem de confirmação do servidor de volta para o cliente
             string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
-            SomarInteiros(client, data);
+            //SomarInteiros(client, data);
+            //NumeroAleatorio(client);
+            ResponderData(client);
             broadcast(client, data);
             Console.WriteLine(data);
         }
@@ -78,6 +80,23 @@ class Program {
         NetworkStream stream = client.GetStream();
         byte[] buffer;
         buffer = Encoding.ASCII.GetBytes($"Resultado de {n[0]} + {n[1]} = " + (n[0] + n[1]) + Environment.NewLine);
+        stream.Write(buffer, 0, buffer.Length);
+
+    }
+
+    public static void NumeroAleatorio(TcpClient client) {
+        Random random = new Random();
+        NetworkStream stream = client.GetStream();
+        byte[] buffer;
+        buffer = Encoding.ASCII.GetBytes($"Número Aleatório: {random.Next(0,10)}" + Environment.NewLine);
+        stream.Write(buffer, 0, buffer.Length);
+
+    }
+
+    public static void ResponderData(TcpClient client) {
+        NetworkStream stream = client.GetStream();
+        byte[] buffer;
+        buffer = Encoding.ASCII.GetBytes($"Data Atual: {DateTime.Now}" + Environment.NewLine);
         stream.Write(buffer, 0, buffer.Length);
 
     }
