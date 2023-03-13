@@ -55,6 +55,12 @@ namespace SD74280_Server
             }
         }
 
+        public static void NumeroAleatorio(TcpClient client)
+        {
+            Random random = new Random();
+            int number = random.Next();
+            broadcast(client, "numero aleatorio:" + number.ToString());
+        }
         public static void Soma(TcpClient client, string data)
         {
             int soma = 0;
@@ -90,7 +96,7 @@ namespace SD74280_Server
                 
                 //Envio da mensagem de confirmação do servidor de volta para o cliente
                 string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
-                Soma(client, data);
+                NumeroAleatorio(client);
                 broadcast(client, data);
                 Console.WriteLine(data);
             }
