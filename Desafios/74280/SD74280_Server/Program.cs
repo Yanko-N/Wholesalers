@@ -48,13 +48,27 @@ namespace SD74280_Server
                 //Só avança para esta parte do código, depois de um cliente ter se conectado ao servidor
                 Console.WriteLine($"{clients[client]} has connected! - {((IPEndPoint)client.Client.RemoteEndPoint).Address}");
                 handle_client(client);
+                
                 Console.WriteLine($"{clients[client]} has disconnected!");
                 mutex.WaitOne();
                 clients.TryRemove(client, out _);
                 mutex.ReleaseMutex();
+
+
             }
         }
-        
+        public static void SendMessages(TcpClient client)
+        { 
+            string sms=Console.ReadLine();
+
+            while (!String.IsNullOrEmpty(sms))
+            {
+                broadcast(client, sms);
+                sms = Console.ReadLine();
+            }
+
+
+        }
         public static void Data(TcpClient client)
         {
             DateTime date = DateTime.Now;
@@ -101,10 +115,13 @@ namespace SD74280_Server
                 
                 //Envio da mensagem de confirmação do servidor de volta para o cliente
                 string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
-                Data(client);
+                
                 broadcast(client, data);
                 Console.WriteLine(data);
+                Thread serverSendMessages = new Thread(()=>{ Program.SendMessages(client); });
+                serverSendMessages.Start();
             }
+
             // código para desligar a conexão com o cliente
             client.Client.Shutdown(SocketShutdown.Both);
             client.Close();
