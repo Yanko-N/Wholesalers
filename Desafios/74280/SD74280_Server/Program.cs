@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.IO;
+using System.Runtime.InteropServices;
 
 namespace SD74280_Server
 {
@@ -19,6 +21,24 @@ namespace SD74280_Server
             //A classe TCPListener implementa os métodos da classe Socket utilizando o protócolo TCP, permitindo uma maior abstração das etapas tipicamente associadas ao Socket.
             TcpListener ServerSocket = new TcpListener(IPAddress.Any, 1337);
             Console.WriteLine($"Listening on: {((IPEndPoint)ServerSocket.LocalEndpoint).Address}:{((IPEndPoint)ServerSocket.LocalEndpoint).Port}");
+            
+            //Codigo da parte do ficheiro
+            int nThreads = 3;
+            
+
+
+            for (int i = 1; i <= 3; i++)
+            {
+                Thread newThread = new Thread(() => { Program.WriteFile(); });
+                newThread.Name = String.Format("Thread {0}", i-1);
+                newThread.Start();
+            }
+                
+
+                
+            
+                
+            
 
             //A chamada ao método "Start" inicia o Socket para ficar à escuta de novas conexões por parte dos clientes
             ServerSocket.Start();
@@ -45,16 +65,45 @@ namespace SD74280_Server
                 });
                 thread.Start();
 
+                
+
+                
+
                 //Só avança para esta parte do código, depois de um cliente ter se conectado ao servidor
                 Console.WriteLine($"{clients[client]} has connected! - {((IPEndPoint)client.Client.RemoteEndPoint).Address}");
                 handle_client(client);
+
                 Console.WriteLine($"{clients[client]} has disconnected!");
                 mutex.WaitOne();
                 clients.TryRemove(client, out _);
                 mutex.ReleaseMutex();
+
+
             }
         }
-        
+        public static void WriteFile()
+        {
+            Console.WriteLine("the Thread {0} is waiting to enter",Thread.CurrentThread.Name);
+            mutex.WaitOne();
+            
+            Console.WriteLine("the Thread {0} entered", Thread.CurrentThread.Name);
+            WriteinFile(Thread.CurrentThread.Name + "<-- :)");
+
+            mutex.ReleaseMutex();
+            Console.WriteLine("The Thread {0} as left", Thread.CurrentThread.Name);
+        }
+        public static void SendMessages(TcpClient client)
+        {
+            string sms = Console.ReadLine();
+
+            while (!String.IsNullOrEmpty(sms))
+            {
+                broadcast(client, sms);
+                sms = Console.ReadLine();
+            }
+
+
+        }
         public static void Data(TcpClient client)
         {
             DateTime date = DateTime.Now;
@@ -80,7 +129,7 @@ namespace SD74280_Server
 
             }
             string finalMessage = soma.ToString() + " Somado";
-            broadcast(client,finalMessage);
+            broadcast(client, finalMessage);
         }
         public static void handle_client(TcpClient client)
         {
@@ -98,19 +147,39 @@ namespace SD74280_Server
                     break;
                 }
 
-                
+
                 //Envio da mensagem de confirmação do servidor de volta para o cliente
                 string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
-                Data(client);
                 broadcast(client, data);
-                Console.WriteLine(data);
+
+                
+
+
+                Thread serverSendMessages = new Thread(() => { Program.SendMessages(client); });
+
+
+                serverSendMessages.Start();
             }
+
             // código para desligar a conexão com o cliente
             client.Client.Shutdown(SocketShutdown.Both);
             client.Close();
         }
 
+      
+        public static void WriteinFile(string text)
+        {
+            StreamReader streamReader = new StreamReader("C:/Users/Vitor Novo/source/repos/SistemasDistribuidos/Desafios/74280/SD74280_Server/file.txt");
+            string fileText = streamReader.ReadToEnd();
+            streamReader.Close();
 
+
+            StreamWriter streamWriter = new StreamWriter("C:/Users/Vitor Novo/source/repos/SistemasDistribuidos/Desafios/74280/SD74280_Server/file.txt");
+            streamWriter.WriteLine(fileText + text);
+            streamWriter.Close();
+
+            //Console.WriteLine(fileText + text + "\n this a above is the text in the file");
+        }
         public static void broadcast(TcpClient client, string data)
         {
             mutex.WaitOne();
