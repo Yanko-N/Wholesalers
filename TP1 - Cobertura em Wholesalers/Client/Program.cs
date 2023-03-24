@@ -18,7 +18,7 @@ namespace Aula_2___Sockets___Client {
                 Program.MainThread(ClientSocket);
             });
             thread.Start();
-
+            SendFile(ClientSocket, "./teste.csv");
             var message = Console.ReadLine();
             while (!String.IsNullOrEmpty(message)) {
                 var bytesmessage = Encoding.UTF8.GetBytes(message);
@@ -37,11 +37,18 @@ namespace Aula_2___Sockets___Client {
                     int byte_count = ClientSocket.GetStream().Read(buffer, 0, buffer.Length);
 
 
-                    string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+                    string data = Encoding.UTF8.GetString(buffer, 0, byte_count);
                     Console.WriteLine(data);
                 }
             } catch (IOException e) {
             }
         }
+
+        public static void SendFile(TcpClient ClientSocket, string path) {
+            Console.WriteLine("Sending File");
+            var buff = File.ReadAllBytes(path).Concat(Encoding.UTF8.GetBytes("\0\0\0")).ToArray();
+            ClientSocket.GetStream().Write(buff, 0, buff.Length);
+        }
+
     }
 }
