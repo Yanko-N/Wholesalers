@@ -2,7 +2,7 @@
 # **TP1 - Cobertura em Wholesalers**
 
 # **Cliente**
-* [ ] Receber Input do IP do servidor
+* [X] Receber Input do IP do servidor
 * [ ] Interface de texto
 
 ---
