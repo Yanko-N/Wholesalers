@@ -108,6 +108,7 @@ namespace Aula_2___Sockets___Server {
                 n = client.GetStream().Read(bRec, 0, bRec.Length);
                 sb.Append(Encoding.UTF8.GetString(bRec, 0, n));
             } while (!Encoding.UTF8.GetString(bRec, 0, n).Contains("\0\0\0"));
+            sb.Replace("\0\0\0", "");
             Console.WriteLine(sb.ToString());
 
             bRec = Encoding.UTF8.GetBytes("File ACK");

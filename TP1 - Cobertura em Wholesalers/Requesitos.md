@@ -20,6 +20,8 @@
 
 # **Protocolo Cliente-Servidor**  
 
+**Mensagens terminadas com 3 NULL BYTES (`\0\0\0`)**
+
 ## Status Codes
 + 100  - OK
 + 101 - COMPLETED
