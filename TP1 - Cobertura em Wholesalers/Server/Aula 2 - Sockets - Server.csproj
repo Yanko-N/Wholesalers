@@ -149,7 +149,9 @@
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
     </Reference>
-    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.ComponentModel.DataAnnotations">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.ComponentModel.DataAnnotations.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Common, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Data.Common.4.3.0\lib\net451\System.Data.Common.dll</HintPath>
@@ -198,6 +200,10 @@
     <Compile Include="Migrations\20230327182630_Initial.cs" />
     <Compile Include="Migrations\20230327182630_Initial.designer.cs">
       <DependentUpon>20230327182630_Initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20230331180225_WithoutRequiredCanBeNull.cs" />
+    <Compile Include="Migrations\20230331180225_WithoutRequiredCanBeNull.designer.cs">
+      <DependentUpon>20230331180225_WithoutRequiredCanBeNull.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\dataContextModelSnapshot.cs" />
     <Compile Include="Models\dataModel.cs" />
