@@ -120,21 +120,21 @@ namespace Aula_2___Sockets___Server
             File.Delete($"./{filename}.csv");
         }
 
-        public static List<dataModel> GetDataModelsMunicipio()
+        public static List<Cobertura> GetDataModelsMunicipio()
         {
             using (var context = new dataContext())
             {
-                List<dataModel> data = context.datas.OrderBy(x => x.Municipio).OrderBy(x=>x.Rua).ToList();
+                List<Cobertura> data = context.Coberturas.OrderBy(x => x.Municipio).OrderBy(x=>x.Rua).ToList();
                 return data;
             };
 
         }
 
-        public static List<dataModel> GetDataModelMunicipio(string municipio)
+        public static List<Cobertura> GetDataModelMunicipio(string municipio)
         {
             using (var context = new dataContext())
             {
-                List<dataModel> data = context.datas.Where(x => x.Municipio.Contains(municipio)).OrderBy(x=>x.Rua).ToList();
+                List<Cobertura> data = context.Coberturas.Where(x => x.Municipio.Contains(municipio)).OrderBy(x=>x.Rua).ToList();
                 return data;
             }
         }

@@ -22,7 +22,6 @@ namespace Aula_2___Sockets.Models
 
         public string Apartamento { get; set; }
 
-        [Required]
         public Boolean Owner { get; set; }
     }
 }

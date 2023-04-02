@@ -201,10 +201,6 @@
     <Compile Include="Migrations\20230329174520_First.designer.cs">
       <DependentUpon>20230329174520_First.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\20230331180225_WithoutRequiredCanBeNull.cs" />
-    <Compile Include="Migrations\20230331180225_WithoutRequiredCanBeNull.designer.cs">
-      <DependentUpon>20230331180225_WithoutRequiredCanBeNull.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\dataContextModelSnapshot.cs" />
     <Compile Include="Models\Cobertura.cs" />
     <Compile Include="Models\Ficheiro.cs" />
