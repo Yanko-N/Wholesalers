@@ -30,22 +30,18 @@ namespace Aula_2___Sockets.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Municipio")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Numero")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Operador")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Owner")
                         .HasColumnType("bit");
 
                     b.Property<string>("Rua")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
