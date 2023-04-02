@@ -1,21 +1,30 @@
-﻿using System;
+﻿using Aula_2___Sockets;
+using Aula_2___Sockets.Models;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
-namespace Aula_2___Sockets___Server {
+namespace Aula_2___Sockets___Server
+{
 
 
-    class Program {
+    class Program
+    {
         private static Mutex mutex = new Mutex();
         private static ConcurrentDictionary<TcpClient, Guid> clients = new ConcurrentDictionary<TcpClient, Guid>();
         private static List<string> files = new List<string>();
 
-        public enum StatusCode {
+        public enum StatusCode
+        {
             OK = 100,
             COMPLETED = 101,
             IN_PROGRESS = 200,
@@ -25,28 +34,33 @@ namespace Aula_2___Sockets___Server {
         }
 
 
-        static void Main(string[] args) {
+        static void Main(string[] args)
+        {
             //A classe TCPListener implementa os métodos da classe Socket utilizando o protócolo TCP, permitindo uma maior abstração das etapas tipicamente associadas ao Socket.
             TcpListener ServerSocket = new TcpListener(IPAddress.Any, 1337);
             Console.WriteLine($"Listening on: {((IPEndPoint)ServerSocket.LocalEndpoint).Address}:{((IPEndPoint)ServerSocket.LocalEndpoint).Port}");
 
             //A chamada ao método "Start" inicia o Socket para ficar à escuta de novas conexões por parte dos clientes
             ServerSocket.Start();
-            Thread thread = new Thread(() => {
+            Thread thread = new Thread(() =>
+            {
                 Program.MainThread(ServerSocket);
             });
             thread.Start();
         }
 
-        public static void MainThread(TcpListener ServerSocket) {
-            while (true) {
+        public static void MainThread(TcpListener ServerSocket)
+        {
+            while (true)
+            {
                 //Ciclo infinito para ficar à espera que um cliente Socket/TCP até quando pretender conectar-se
 
                 TcpClient client = ServerSocket.AcceptTcpClient();
                 mutex.WaitOne();
                 clients.TryAdd(client, Guid.NewGuid());
                 mutex.ReleaseMutex();
-                Thread thread = new Thread(() => {
+                Thread thread = new Thread(() =>
+                {
                     Program.MainThread(ServerSocket);
                 });
                 thread.Start();
@@ -60,17 +74,20 @@ namespace Aula_2___Sockets___Server {
             }
         }
 
-        public static void handle_client(TcpClient client) {
+        public static void handle_client(TcpClient client)
+        {
             // Neste método, é iniciada a gestão da comunicação do servidor com o cliente
 
-            while (true) {
+            while (true)
+            {
                 ParseFile(client);
                 //ciclo infinito de receção de mensagens por parte do cliente, até o cliente ter enviado uma mensagem vazia (só clicou no 'Enter')
                 NetworkStream stream = client.GetStream();
                 byte[] buffer = new byte[1024];
                 int byte_count = stream.Read(buffer, 0, buffer.Length);
 
-                if (byte_count == 0) {
+                if (byte_count == 0)
+                {
                     break;
                 }
 
@@ -85,9 +102,11 @@ namespace Aula_2___Sockets___Server {
         }
 
 
-        public static void broadcast(TcpClient client, string data) {
+        public static void broadcast(TcpClient client, string data)
+        {
             mutex.WaitOne();
-            foreach (var c in clients) {
+            foreach (var c in clients)
+            {
                 NetworkStream stream = c.Key.GetStream();
                 byte[] buffer;
                 if (c.Key == client)
@@ -99,12 +118,14 @@ namespace Aula_2___Sockets___Server {
             mutex.ReleaseMutex();
         }
 
-        public static void ParseFile(TcpClient client) {
+        public static void ParseFile(TcpClient client)
+        {
             byte[] bRec = new byte[1024];
             int n;
             var sb = new StringBuilder();
 
-            do {
+            do
+            {
                 n = client.GetStream().Read(bRec, 0, bRec.Length);
                 sb.Append(Encoding.UTF8.GetString(bRec, 0, n));
             } while (!Encoding.UTF8.GetString(bRec, 0, n).Contains("\0\0\0"));
@@ -117,10 +138,13 @@ namespace Aula_2___Sockets___Server {
             File.WriteAllText("./teste.csv", sb.ToString());
             var hash = ChecksumUtil.GetChecksum(HashingAlgoTypes.SHA256, "./teste.csv");
 
-            if (!files.Contains(hash)) {
+            if (!files.Contains(hash))
+            {
                 files.Add(hash);
                 var lista = CsvParser.CsvToList("./teste.csv", ';');
-            } else {
+            }
+            else
+            {
                 Console.WriteLine("Erro: Ficheiro já processado!");
                 bRec = Encoding.UTF8.GetBytes("Erro: Ficheiro já processado!");
                 client.GetStream().Write(bRec, 0, bRec.Length);
@@ -128,5 +152,22 @@ namespace Aula_2___Sockets___Server {
 
         }
 
+        public static List<dataModel> GetDataModelsMunicipio()
+        {
+            using (var context = new dataContext())
+            {
+                List<dataModel> data = context.datas.OrderBy(x => x.Municipio).OrderBy(x=>x.Rua).ToList();
+                return data;
+            };
+        }
+
+        public static List<dataModel> GetDataModelMunicipio(string municipio)
+        {
+            using (var context = new dataContext())
+            {
+                List<dataModel> data = context.datas.Where(x => x.Municipio.Contains(municipio)).OrderBy(x=>x.Rua).ToList();
+                return data;
+            }
+        }
     }
 }
