@@ -3,16 +3,16 @@
 
 # **Cliente**
 * [X] Receber Input do IP do servidor
-* [ ] Interface de texto
+* [X] Interface de texto
 
 ---
 # **Servidor**
-* [ ] Receber ficheiro de cobertura
+* [X] Receber ficheiro de cobertura
 * [ ] Processar ficheiro de cobertura
 * [ ] Armazenar data início do processamento, nome do ficheiro, operador e estado (OPEN, ERROR, IN_PROGRESS, COMPLETED)
-* [ ] Não deverão processar-se dois ficheiros iguais (File Checksum [ SHA256? ])
-* [ ] Usar uma DB (MySql?? / Sqlite??)
-* [ ] Classificação por município
+* [X] Não deverão processar-se dois ficheiros iguais (File Checksum)
+* [X] Usar uma DB
+* [X] Classificação por município
 * [ ] Linha do ficheiro processada -> atualizar  informação município associado
 * [x] Atendimento concorrente (Threads e Mutexes)
 
@@ -36,14 +36,13 @@
 
 ## Cliente
 1. IP Server
-2. HELLO
-3. Input File
-4. Get FeedBack
-5. QUIT 
-6. BYE
+2. Input File
+3. Get FeedBack
+4. QUIT 
+5. BYE
 
 ## Servidor
-1. HELLO -> 100 OK
+1. 100 OK
 2. ACK File
 3. Send FeedBack
 4. QUIT -> 400 BYE
@@ -53,10 +52,10 @@
 * .CSV
 
 + 100  - OK
-+ 101 - COMPLETED ??
++ 101 - COMPLETED 
 
-* 200 - IN_PROGRESS ?? 
-* 201 - OPEN ?? 
+* 200 - IN_PROGRESS 
+* 201 - OPEN 
 
 + 300 - ERROR
 

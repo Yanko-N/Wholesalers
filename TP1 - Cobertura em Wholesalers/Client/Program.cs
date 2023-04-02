@@ -8,89 +8,75 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Aula_2___Sockets___Client
-{
-    internal class Program
-    {
-        static void Main(string[] args)
-        {
+namespace Aula_2___Sockets___Client {
+    internal class Program {
+        public enum StatusCode {
+            OK = 100,
+            ERROR = 300,
+            BYE = 400
+        }
+        static void Main(string[] args) {
 
             TcpClient ClientSocket = ConnectServer();
 
-            if (ClientSocket.Connected)
-            {
+            if (ClientSocket.Connected) {
                 Console.WriteLine($"Connected to: {((IPEndPoint)ClientSocket.Client.RemoteEndPoint).Address}:{((IPEndPoint)ClientSocket.Client.RemoteEndPoint).Port}");
 
+                byte[] buffer = new byte[1024];
+                string data;
+                do {
+                    int byte_count = ClientSocket.GetStream().Read(buffer, 0, buffer.Length);
+                    data = Encoding.UTF8.GetString(buffer, 0, byte_count);
+                } while (!data.Contains("\0\0\0"));
 
-                Thread thread = new Thread(() =>
-                {
-                    Program.MainThread(ClientSocket);
-                });
-                thread.Start();
-                SendFile(ClientSocket, "./teste.csv");
-                var message = Console.ReadLine();
-                while (!String.IsNullOrEmpty(message))
-                {
-                    var bytesmessage = Encoding.UTF8.GetBytes(message);
-                    ClientSocket.GetStream().Write(bytesmessage, 0, bytesmessage.Length);
-                    message = Console.ReadLine();
+                if (!data.Contains($"{(int)StatusCode.OK} - {StatusCode.OK}")) {
+                    Console.WriteLine("Error: Closing connection...");
+                    ClientSocket.Client.Shutdown(SocketShutdown.Both);
+                    ClientSocket.Close();
+                    Console.ReadKey();
+                    return;
                 }
-                ClientSocket.Client.Shutdown(SocketShutdown.Both);
-                ClientSocket.Close();
+
+
+                SendFile(ClientSocket, "./teste.csv");
+
+                do {
+                    int byte_count = ClientSocket.GetStream().Read(buffer, 0, buffer.Length);
+                    data = Encoding.UTF8.GetString(buffer, 0, byte_count);
+                } while (!data.Contains("\0\0\0"));
+
+                Console.WriteLine(data);
+                Console.ReadKey();
+
             }
             ClientSocket.Close();
 
         }
 
-        public static TcpClient ConnectServer()
-        {
+        public static TcpClient ConnectServer() {
             TcpClient ClientSocket = new TcpClient();
 
             string[] ipBuffer;
-            while (true)
-            {
+            while (true) {
                 Console.WriteLine("Write the IP you want to connect to:");
                 ipBuffer = Console.ReadLine().Split(':');
-                if (ipBuffer.Length == 2)
-                {
+                if (ipBuffer.Length == 2) {
                     if (!String.IsNullOrEmpty(ipBuffer[0]) && !String.IsNullOrEmpty(ipBuffer[1]))
                         break;
                 }
             }
 
-            try
-            {
+            try {
                 ClientSocket.Connect(ipBuffer[0], int.Parse(ipBuffer[1]));
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Console.WriteLine($"{e.Message}\n");
             }
 
             return ClientSocket;
         }
 
-        public static void MainThread(TcpClient ClientSocket)
-        {
-            try
-            {
-                while (ClientSocket.Connected)
-                {
-                    byte[] buffer = new byte[1024];
-                    int byte_count = ClientSocket.GetStream().Read(buffer, 0, buffer.Length);
 
-
-                    string data = Encoding.UTF8.GetString(buffer, 0, byte_count);
-                    Console.WriteLine(data);
-                }
-            }
-            catch (IOException e)
-            {
-            }
-        }
-
-        public static void SendFile(TcpClient ClientSocket, string path)
-        {
+        public static void SendFile(TcpClient ClientSocket, string path) {
             Console.WriteLine($"Sending File: {path}");
             var buff = File.ReadAllBytes(path).Concat(Encoding.UTF8.GetBytes("\0\0\0")).ToArray();
             ClientSocket.GetStream().Write(buff, 0, buff.Length);
