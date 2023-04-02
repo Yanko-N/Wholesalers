@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Aula_2___Sockets.Models
 {
-    public class dataModel
+    public class Cobertura
     {
         [Key]
         public int Id { get; set; }
@@ -24,10 +24,9 @@ namespace Aula_2___Sockets.Models
         [Required]
         public string Numero { get; set; }
 
-        [Required]
-        public string Apartamento { get; set; }
+        public string Apartamento { get; set; } = null;
 
         [Required]
-        public int Owner { get; set; }
+        public Boolean Owner { get; set; }
     }
 }

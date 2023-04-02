@@ -195,12 +195,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="dataContext.cs" />
-    <Compile Include="Migrations\20230327182630_Initial.cs" />
-    <Compile Include="Migrations\20230327182630_Initial.designer.cs">
-      <DependentUpon>20230327182630_Initial.cs</DependentUpon>
+    <Compile Include="Migrations\20230329174520_First.cs" />
+    <Compile Include="Migrations\20230329174520_First.designer.cs">
+      <DependentUpon>20230329174520_First.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\dataContextModelSnapshot.cs" />
-    <Compile Include="Models\dataModel.cs" />
+    <Compile Include="Models\Cobertura.cs" />
+    <Compile Include="Models\Ficheiro.cs" />
+    <Compile Include="Models\Logs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
@@ -221,6 +223,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

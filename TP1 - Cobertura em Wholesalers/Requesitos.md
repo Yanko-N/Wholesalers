@@ -14,7 +14,7 @@
 * [ ] Usar uma DB (MySql?? / Sqlite??)
 * [ ] Classificação por município
 * [ ] Linha do ficheiro processada -> atualizar  informação município associado
-* [ ] Atendimento concorrente (Threads e Mutexes)
+* [x] Atendimento concorrente (Threads e Mutexes)
 
 ---
 

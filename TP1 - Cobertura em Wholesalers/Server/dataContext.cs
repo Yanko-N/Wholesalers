@@ -10,7 +10,10 @@ namespace Aula_2___Sockets
 {
     public class dataContext : DbContext
     {
-        public DbSet<dataModel> datas { get; set; }
+        public DbSet<Cobertura> Coberturas { get; set; }
+        public DbSet<Logs> Logs { get; set; }
+        public DbSet<Ficheiro> Ficheiros { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
