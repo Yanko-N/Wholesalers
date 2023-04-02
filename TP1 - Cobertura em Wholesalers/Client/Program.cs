@@ -24,13 +24,11 @@ namespace Aula_2___Sockets___Client {
 
                 byte[] buffer = new byte[1024];
                 string data;
-                do {
-                    int byte_count = ClientSocket.GetStream().Read(buffer, 0, buffer.Length);
-                    data = Encoding.UTF8.GetString(buffer, 0, byte_count);
-                } while (!data.Contains("\0\0\0"));
+
+                data = GetDataFromStream(ClientSocket);
 
                 if (!data.Contains($"{(int)StatusCode.OK} - {StatusCode.OK}")) {
-                    Console.WriteLine("Error: Closing connection...");
+                    Console.WriteLine($"Error: Expected '{(int)StatusCode.OK} - {StatusCode.OK}' \nClosing connection...");
                     ClientSocket.Client.Shutdown(SocketShutdown.Both);
                     ClientSocket.Close();
                     Console.ReadKey();
@@ -38,19 +36,43 @@ namespace Aula_2___Sockets___Client {
                 }
 
 
-                SendFile(ClientSocket, "./teste.csv");
-
+                string path;
                 do {
-                    int byte_count = ClientSocket.GetStream().Read(buffer, 0, buffer.Length);
-                    data = Encoding.UTF8.GetString(buffer, 0, byte_count);
-                } while (!data.Contains("\0\0\0"));
+                    Console.Write("Full Path to File or Drag an Drop File: ");
+                    path = Console.ReadLine();
+                    path = path.Replace("\"", "");
+                    path = path.Replace(@"\\", @"\");
+                } while (!SendFile(ClientSocket, path));
+
+                data = GetDataFromStream(ClientSocket);
 
                 Console.WriteLine(data);
+
+                buffer = Encoding.UTF8.GetBytes("QUIT\0\0\0");
+                ClientSocket.GetStream().Write(buffer, 0, buffer.Length);
+
+                data = GetDataFromStream(ClientSocket);
+
+                Console.WriteLine(data);
+
+
+                Console.WriteLine("\nPress any key to exit...");
                 Console.ReadKey();
 
             }
             ClientSocket.Close();
 
+        }
+
+        public static string GetDataFromStream(TcpClient client) {
+            byte[] buffer = new byte[1024];
+            StringBuilder data = new StringBuilder();
+            do {
+                int byte_count = client.GetStream().Read(buffer, 0, buffer.Length);
+                data.Append(Encoding.UTF8.GetString(buffer, 0, byte_count));
+            } while (!data.ToString().Contains("\0\0\0"));
+
+            return data.ToString();
         }
 
         public static TcpClient ConnectServer() {
@@ -70,16 +92,24 @@ namespace Aula_2___Sockets___Client {
                 ClientSocket.Connect(ipBuffer[0], int.Parse(ipBuffer[1]));
             } catch (Exception e) {
                 Console.WriteLine($"{e.Message}\n");
+                Console.ReadKey();
             }
+
 
             return ClientSocket;
         }
 
 
-        public static void SendFile(TcpClient ClientSocket, string path) {
-            Console.WriteLine($"Sending File: {path}");
-            var buff = File.ReadAllBytes(path).Concat(Encoding.UTF8.GetBytes("\0\0\0")).ToArray();
-            ClientSocket.GetStream().Write(buff, 0, buff.Length);
+        public static bool SendFile(TcpClient ClientSocket, string path) {
+            try {
+                Console.WriteLine($"Sending File: {path}");
+                var buff = File.ReadAllBytes(path).Concat(Encoding.UTF8.GetBytes("\0\0\0")).ToArray();
+                ClientSocket.GetStream().Write(buff, 0, buff.Length);
+                return true;
+            } catch (FileNotFoundException e) {
+                Console.WriteLine(e.Message);
+                return false;
+            }
         }
 
     }

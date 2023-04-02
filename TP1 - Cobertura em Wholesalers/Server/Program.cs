@@ -49,12 +49,13 @@ namespace Aula_2___Sockets___Server {
         }
 
         public static void handle_client(TcpClient client) {
+            string id = Guid.NewGuid().ToString();
+            Console.WriteLine($"{id} Connected!");
             // Neste método, é iniciada a gestão da comunicação do servidor com o cliente
             OnClientConnected(client);
             ParseFile(client);
-
-
             CloseConnection(client);
+            Console.WriteLine($"{id} Disconnected!");
         }
 
 
@@ -73,8 +74,8 @@ namespace Aula_2___Sockets___Server {
             var hash = ChecksumUtil.GetChecksum(HashingAlgoTypes.SHA256, $"./{filename}.csv");
 
             if (!dataContext.Ficheiros.Any(x => x.Hash == hash)) {
-                bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.OK} - Ficheiro Recebido\0\0\0");
-                Console.WriteLine($"{(int)StatusCode.OK} - Ficheiro Recebido\0\0\0");
+                bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.OK} - File Received\0\0\0");
+                Console.WriteLine($"{(int)StatusCode.OK} - File Received\0\0\0");
                 client.GetStream().Write(bRec, 0, bRec.Length);
 
                 Ficheiro file = new Ficheiro();
@@ -84,8 +85,8 @@ namespace Aula_2___Sockets___Server {
                 var lista = CsvParser.CsvToList($"./{filename}.csv", ';');
 
             } else {
-                Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Ficheiro já processado!\0\0\0");
-                bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Ficheiro já processado!\0\0\0");
+                Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: File already processed!\0\0\0");
+                bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: File already processed!\0\0\0");
                 client.GetStream().Write(bRec, 0, bRec.Length);
             }
 
@@ -113,10 +114,19 @@ namespace Aula_2___Sockets___Server {
         }
 
         public static void CloseConnection(TcpClient client) {
-            //TODO: QUIT -> 400 BYE
+            byte[] buffer = new byte[1024];
+            StringBuilder data = new StringBuilder();
+            do {
+                int byte_count = client.GetStream().Read(buffer, 0, buffer.Length);
+                data.Append(Encoding.UTF8.GetString(buffer, 0, byte_count));
+            } while (!data.ToString().Contains("\0\0\0"));
 
-            client.Client.Shutdown(SocketShutdown.Both);
-            client.Close();
+            if (data.ToString().Contains("QUIT")) {
+                buffer = Encoding.UTF8.GetBytes($"{(int)StatusCode.BYE} - {StatusCode.BYE}\0\0\0");
+                client.GetStream().Write(buffer, 0, buffer.Length);
+                client.Client.Shutdown(SocketShutdown.Both);
+                client.Close();
+            }
         }
     }
 }
