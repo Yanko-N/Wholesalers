@@ -48,6 +48,11 @@ namespace Aula_2___Sockets___Client {
 
                 Console.WriteLine(data);
 
+                data = GetDataFromStream(ClientSocket);
+
+                Console.WriteLine(data);
+
+
                 buffer = Encoding.UTF8.GetBytes("QUIT\0\0\0");
                 ClientSocket.GetStream().Write(buffer, 0, buffer.Length);
 
