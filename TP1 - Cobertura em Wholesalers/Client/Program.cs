@@ -103,7 +103,7 @@ namespace Aula_2___Sockets___Client {
         public static bool SendFile(TcpClient ClientSocket, string path) {
             try {
                 Console.WriteLine($"Sending File: {path}");
-                var buff = File.ReadAllBytes(path).Concat(Encoding.UTF8.GetBytes("\0\0\0")).ToArray();
+                var buff = Encoding.UTF8.GetBytes(File.ReadAllText(path, Encoding.GetEncoding(1252)) + "\0\0\0");
                 ClientSocket.GetStream().Write(buff, 0, buff.Length);
                 return true;
             } catch (FileNotFoundException e) {

@@ -37,11 +37,11 @@ namespace Aula_2___Sockets___Client {
                     int byte_count = ClientSocket.GetStream().Read(buffer, 0, buffer.Length);
 
 
-                    string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+                    string data = Encoding.UTF8.GetString(buffer, 0, byte_count);
                     Console.WriteLine(data);
                 }
             } catch (IOException e) {
-               
+
             }
         }
     }

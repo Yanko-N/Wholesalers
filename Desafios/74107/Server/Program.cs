@@ -58,7 +58,7 @@ class Program {
             }
 
             //Envio da mensagem de confirmação do servidor de volta para o cliente
-            string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+            string data = Encoding.UTF8.GetString(buffer, 0, byte_count);
             //SomarInteiros(client, data);
             //NumeroAleatorio(client);
             //ResponderData(client);
@@ -74,12 +74,12 @@ class Program {
         string[] arr = data.Split(' ');
         int[] n = new int[2];
         if (arr.Length != 2) return;
-        if(!Int32.TryParse(arr[0], out n[0])) return;
+        if (!Int32.TryParse(arr[0], out n[0])) return;
         if (!Int32.TryParse(arr[1], out n[1])) return;
 
         NetworkStream stream = client.GetStream();
         byte[] buffer;
-        buffer = Encoding.ASCII.GetBytes($"Resultado de {n[0]} + {n[1]} = " + (n[0] + n[1]) + Environment.NewLine);
+        buffer = Encoding.UTF8.GetBytes($"Resultado de {n[0]} + {n[1]} = " + (n[0] + n[1]) + Environment.NewLine);
         stream.Write(buffer, 0, buffer.Length);
 
     }
@@ -88,7 +88,7 @@ class Program {
         Random random = new Random();
         NetworkStream stream = client.GetStream();
         byte[] buffer;
-        buffer = Encoding.ASCII.GetBytes($"Número Aleatório: {random.Next(0,10)}" + Environment.NewLine);
+        buffer = Encoding.UTF8.GetBytes($"Número Aleatório: {random.Next(0, 10)}" + Environment.NewLine);
         stream.Write(buffer, 0, buffer.Length);
 
     }
@@ -96,7 +96,7 @@ class Program {
     public static void ResponderData(TcpClient client) {
         NetworkStream stream = client.GetStream();
         byte[] buffer;
-        buffer = Encoding.ASCII.GetBytes($"Data Atual: {DateTime.Now}" + Environment.NewLine);
+        buffer = Encoding.UTF8.GetBytes($"Data Atual: {DateTime.Now}" + Environment.NewLine);
         stream.Write(buffer, 0, buffer.Length);
 
     }
@@ -105,14 +105,14 @@ class Program {
     public static void broadcast(TcpClient client, string data) {
         mutex.WaitOne();
         foreach (var c in clients) {
-                NetworkStream stream = c.Key.GetStream();
-                byte[] buffer;
-                if (c.Key == client)
-                    buffer = Encoding.ASCII.GetBytes(data + " - Server Acknowledgement" + Environment.NewLine);
-                else
-                    buffer = Encoding.ASCII.GetBytes(clients[client] + ": " + data);
-                stream.Write(buffer, 0, buffer.Length);
-            }
+            NetworkStream stream = c.Key.GetStream();
+            byte[] buffer;
+            if (c.Key == client)
+                buffer = Encoding.UTF8.GetBytes(data + " - Server Acknowledgement" + Environment.NewLine);
+            else
+                buffer = Encoding.UTF8.GetBytes(clients[client] + ": " + data);
+            stream.Write(buffer, 0, buffer.Length);
+        }
         mutex.ReleaseMutex();
     }
 }
