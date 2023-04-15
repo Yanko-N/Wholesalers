@@ -15,6 +15,7 @@ namespace Aula_2___Sockets___Server {
 
     class Program {
         public static dataContext dataContext = new dataContext();
+        public static Mutex mutex = new Mutex();
         public enum StatusCode {
             OK = 100,
             ERROR = 300,
@@ -59,10 +60,14 @@ namespace Aula_2___Sockets___Server {
 
             string id = Guid.NewGuid().ToString();
             Console.WriteLine($"{id} Connected!");
-
+            Thread.CurrentThread.Name = id;
             // Neste método, é iniciada a gestão da comunicação do servidor com o cliente
             OnClientConnected(client);
-            ParseFile(client);
+            try {
+                ParseFile(client);
+            } catch (Exception e) {
+                Console.WriteLine(e.Message);
+            }
             CloseConnection(client);
             Console.WriteLine($"{id} Disconnected!");
         }
@@ -83,15 +88,20 @@ namespace Aula_2___Sockets___Server {
             File.WriteAllText($"./Coberturas/{filename}.csv", sb.ToString(), Encoding.UTF8);
             var hash = ChecksumUtil.GetChecksum(HashingAlgoTypes.SHA256, $"./Coberturas/{filename}.csv");
 
+            bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.OK} - File Received\0\0\0");
+            Console.WriteLine($"{(int)StatusCode.OK} - File Received\0\0\0");
+            client.GetStream().Write(bRec, 0, bRec.Length);
+            Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
+            mutex.WaitOne();
+            Console.WriteLine($"{Thread.CurrentThread.Name} is in the protected area");
             if (!dataContext.Ficheiros.Any(x => x.Hash == hash)) {
-                bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.OK} - File Received\0\0\0");
-                Console.WriteLine($"{(int)StatusCode.OK} - File Received\0\0\0");
-                client.GetStream().Write(bRec, 0, bRec.Length);
 
                 Ficheiro file = new Ficheiro();
                 file.Hash = hash;
                 dataContext.Ficheiros.Add(file);
                 dataContext.SaveChanges();
+                mutex.ReleaseMutex();
+                Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
                 var lista = CsvParser.CsvToList($"./Coberturas/{filename}.csv", ';');
                 if (lista[0][0] != "Operador" || lista[0][1] != "Município" || lista[0][2] != "Rua" || lista[0][3] != "Número" || lista[0][4] != "Apartamento" || lista[0][5] != "Owner") {
                     Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
@@ -106,8 +116,14 @@ namespace Aula_2___Sockets___Server {
                     lista.RemoveAt(0);
                     lista = lista.OrderBy(x => x[1]).ToList();
                     lista.Insert(0, new List<string>() { "Operador", "Município", "Rua", "Número", "Apartamento", "Owner" });
+                    Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
+                    mutex.WaitOne();
+                    Console.WriteLine($"{Thread.CurrentThread.Name} is in the protected area");
                     dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.OPEN.ToString(), Ficheiro = $"{filename}.csv", Operador = lista[1][0] });
                     dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.IN_PROGRESS.ToString(), Ficheiro = $"{filename}.csv", Operador = lista[1][0] });
+                    dataContext.SaveChanges();
+                    mutex.ReleaseMutex();
+                    Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
                     foreach (var item in lista) {
                         if (item[0] != "Operador") {
                             if (String.IsNullOrEmpty(item[0]) || String.IsNullOrEmpty(item[1]) ||
@@ -115,7 +131,13 @@ namespace Aula_2___Sockets___Server {
 
                                 Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Parsing error, empty or null value! '{item[0]};{item[1]};{item[2]};{item[3]};{item[4]};{item[5]} is invalid! File: {filename}.csv\0\0\0");
                                 Erros.Add($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Parsing error, empty or null value! '{item[0]};{item[1]};{item[2]};{item[3]};{item[4]};{item[5]} is invalid!\n");
+                                Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
+                                mutex.WaitOne();
+                                Console.WriteLine($"{Thread.CurrentThread.Name} is in the protected area");
                                 dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.ERROR.ToString(), Ficheiro = $"{filename}.csv", Operador = lista[1][0] });
+                                dataContext.SaveChanges();
+                                mutex.ReleaseMutex();
+                                Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
                             } else {
                                 if (String.IsNullOrEmpty(item[5])) item[5] = "false";
                                 else item[5] = "true";
@@ -131,7 +153,13 @@ namespace Aula_2___Sockets___Server {
                             }
                         }
                     }
+                    Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
+                    mutex.WaitOne();
+                    Console.WriteLine($"{Thread.CurrentThread.Name} is in the protected area");
                     dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.COMPLETED.ToString(), Ficheiro = $"{filename}.csv", Operador = lista[1][0] });
+                    dataContext.SaveChanges();
+                    mutex.ReleaseMutex();
+                    Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
                     GuardarCoberturasBaseDados(coberturas, client, Erros);
                     string errostobuff = "";
                     foreach (var e in Erros) {
@@ -146,6 +174,8 @@ namespace Aula_2___Sockets___Server {
 
 
             } else {
+                mutex.ReleaseMutex();
+                Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
                 Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: File already processed!\0\0\0");
                 bRec = Encoding.UTF8.GetBytes(
                     $"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: File already processed!\0\0\0");
@@ -158,7 +188,9 @@ namespace Aula_2___Sockets___Server {
 
         public static void GuardarCoberturasBaseDados(List<Cobertura> coberturas, TcpClient client, List<string> Erros) {
             byte[] bRec = new byte[1024];
-
+            Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
+            mutex.WaitOne();
+            Console.WriteLine($"{Thread.CurrentThread.Name} is in the protected area");
             foreach (var cobertura in coberturas) {
                 //Verifico se não existe nenhuma cobertura com a mesma morada
                 if (!dataContext.Coberturas.Any(c => c.Municipio == cobertura.Municipio && c.Rua == cobertura.Rua && c.Apartamento == cobertura.Apartamento && c.Numero == cobertura.Numero)) {
@@ -172,14 +204,20 @@ namespace Aula_2___Sockets___Server {
 
             }
             dataContext.SaveChanges();
+            mutex.ReleaseMutex();
+            Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
         }
         public static List<Cobertura> GetDataModelsMunicipio() {
+            mutex.WaitOne();
             List<Cobertura> data = dataContext.Coberturas.OrderBy(x => x.Municipio).OrderBy(x => x.Rua).ToList();
+            mutex.ReleaseMutex();
             return data;
         }
 
         public static List<Cobertura> GetDataModelMunicipio(string municipio) {
+            mutex.WaitOne();
             List<Cobertura> data = dataContext.Coberturas.Where(x => x.Municipio.Contains(municipio)).OrderBy(x => x.Rua).ToList();
+            mutex.ReleaseMutex();
             return data;
         }
 
@@ -191,6 +229,7 @@ namespace Aula_2___Sockets___Server {
         public static void CloseConnection(TcpClient client) {
             byte[] buffer = new byte[1024];
             StringBuilder data = new StringBuilder();
+            if (!client.Connected) return;
             do {
                 int byte_count = client.GetStream().Read(buffer, 0, buffer.Length);
                 data.Append(Encoding.UTF8.GetString(buffer, 0, byte_count));
