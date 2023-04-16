@@ -85,7 +85,11 @@ namespace Aula_2___Sockets___Server
             Console.WriteLine($"{id} Disconnected!");
         }
 
-
+        /// <summary>
+        /// Função que faz parsing a um ficheiro e que organiza os
+        /// dados recebidos
+        /// </summary>
+        /// <param name="client"></param>
         public static void ParseFile(TcpClient client)
         {
             List<string> Erros = new List<string>();
@@ -94,18 +98,24 @@ namespace Aula_2___Sockets___Server
             var sb = new StringBuilder();
             string filename = Guid.NewGuid().ToString();
 
+            //receber o ficheiro
             do
             {
                 n = client.GetStream().Read(bRec, 0, bRec.Length);
                 sb.Append(Encoding.UTF8.GetString(bRec, 0, n));
             } while (!Encoding.UTF8.GetString(bRec, 0, n).Contains("\0\0\0"));
+
             sb.Replace("\0\0\0", "");
+
             File.WriteAllText($"./Coberturas/{filename}.csv", sb.ToString(), Encoding.UTF8);
             var hash = ChecksumUtil.GetChecksum(HashingAlgoTypes.SHA256, $"./Coberturas/{filename}.csv");
 
+            //ficheiro recebido
             bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.OK} - File Received\0\0\0");
             Console.WriteLine($"{(int)StatusCode.OK} - File Received\0\0\0");
             client.GetStream().Write(bRec, 0, bRec.Length);
+            
+            //wait
             Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
             mutex.WaitOne();
             Console.WriteLine($"{Thread.CurrentThread.Name} is in the protected area");
@@ -120,13 +130,33 @@ namespace Aula_2___Sockets___Server
                 dataContext.SaveChanges();
                 mutex.ReleaseMutex();
                 Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
+                //release
+
+
                 var lista = CsvParser.CsvToList($"./Coberturas/{filename}.csv", ';');
 
+                //Verifico se a 1 linha não contem todos as componentes
                 if (lista[0][0] != "Operador" || lista[0][1] != "Município" || lista[0][2] != "Rua" || lista[0][3] != "Número" || lista[0][4] != "Apartamento" || lista[0][5] != "Owner")
                 {
+                    //wait
+                    Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
+                    mutex.WaitOne();
+                    Console.WriteLine($"{Thread.CurrentThread.Name} is in the protected area");
+
+                    //guardar nos logs que o documento não foi processado pois é invalido
                     Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
                     bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
+
+                    dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.ERROR.ToString(), Ficheiro = $"{filename}.csv"});
+                    dataContext.SaveChanges();
+
+                    mutex.ReleaseMutex( );
+                    Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
+                    //release
+
                     client.GetStream().Write(bRec, 0, bRec.Length);
+
+                    //delete no ficheiro
                     File.Delete($"./Coberturas/{filename}.csv");
                 }
                 else
@@ -187,11 +217,10 @@ namespace Aula_2___Sockets___Server
                             {
 
                                 //Classificar se é Owner
-                                if (String.IsNullOrEmpty(item[5])) item[5] = "false";
-                                else item[5] = "true";
+                                if (String.IsNullOrEmpty(item[5])) item[5] = "false"; //se for nulo quer dizer que é falso
+                                else item[5] = "true";  //qualquer coisa é owner
 
                                 //Criar Objeto Cobertura e adicionar a uma lista
-
                                 Cobertura cobertura = new Cobertura()
                                 {
                                     Operador = item[0],
@@ -201,6 +230,7 @@ namespace Aula_2___Sockets___Server
                                     Apartamento = item[4],
                                     Owner = Boolean.Parse(item[5]),
                                 };
+                                //adicionar a cobertura a lista de coberturas que estão no documento
                                 coberturas.Add(cobertura);
                             }
                         }
@@ -220,7 +250,7 @@ namespace Aula_2___Sockets___Server
                     mutex.ReleaseMutex();
                     Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
                     //release
-                    
+
                     string errostobuff = "";
                     foreach (var e in Erros)
                     {
@@ -237,7 +267,7 @@ namespace Aula_2___Sockets___Server
             }
             else
             {
-                
+
                 //Status para os Logs
                 dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.ERROR.ToString(), Ficheiro = $"{filename}.csv" });
                 dataContext.SaveChanges();
