@@ -51,19 +51,18 @@ namespace Aula_2___Sockets___Server
 
         public static void MainThread(TcpListener ServerSocket)
         {
-            while (true)
-            {
-                //Ciclo infinito para ficar à espera que um cliente Socket/TCP até quando pretender conectar-se
 
-                TcpClient client = ServerSocket.AcceptTcpClient();
-                Thread thread = new Thread(() =>
-                {
-                    Program.MainThread(ServerSocket);
-                });
-                thread.Start();
-                //Só avança para esta parte do código, depois de um cliente ter se conectado ao servidor
-                handle_client(client);
-            }
+            //Ciclo infinito para ficar à espera que um cliente Socket/TCP até quando pretender conectar-se
+
+            TcpClient client = ServerSocket.AcceptTcpClient();
+            Thread thread = new Thread(() =>
+            {
+                Program.MainThread(ServerSocket);
+            });
+            thread.Start();
+            //Só avança para esta parte do código, depois de um cliente ter se conectado ao servidor
+            handle_client(client);
+
         }
 
         public static void handle_client(TcpClient client)
@@ -83,6 +82,7 @@ namespace Aula_2___Sockets___Server
                 Console.WriteLine(e.Message);
             }
             CloseConnection(client);
+
             Console.WriteLine($"{id} Disconnected!");
         }
 
@@ -115,7 +115,7 @@ namespace Aula_2___Sockets___Server
             bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.OK} - File Received\0\0\0");
             Console.WriteLine($"{(int)StatusCode.OK} - File Received\0\0\0");
             client.GetStream().Write(bRec, 0, bRec.Length);
-            
+
             //wait
             Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
             mutex.WaitOne();
@@ -139,17 +139,18 @@ namespace Aula_2___Sockets___Server
                 //Verifico se a 1 linha não contem todos as componentes
                 if (lista[0][0] != "Operador" || lista[0][1] != "Município" || lista[0][2] != "Rua" || lista[0][3] != "Número" || lista[0][4] != "Apartamento" || lista[0][5] != "Owner")
                 {
-                   
+
                     Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
                     bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
 
-                    
-                   
+
+
 
                     client.GetStream().Write(bRec, 0, bRec.Length);
 
                     //delete no ficheiro
                     File.Delete($"./Coberturas/{filename}.csv");
+                    return;
                 }
                 else
                 {
