@@ -35,6 +35,7 @@ namespace Aula_2___Sockets___Server
 
         static void Main(string[] args)
         {
+            Directory.CreateDirectory("./Coberturas");
             //A classe TCPListener implementa os métodos da classe Socket utilizando o protócolo TCP, permitindo uma maior abstração das etapas tipicamente associadas ao Socket.
             TcpListener ServerSocket = new TcpListener(IPAddress.Any, 1337);
             Console.WriteLine($"Listening on: {((IPEndPoint)ServerSocket.LocalEndpoint).Address}:{((IPEndPoint)ServerSocket.LocalEndpoint).Port}");
@@ -138,21 +139,12 @@ namespace Aula_2___Sockets___Server
                 //Verifico se a 1 linha não contem todos as componentes
                 if (lista[0][0] != "Operador" || lista[0][1] != "Município" || lista[0][2] != "Rua" || lista[0][3] != "Número" || lista[0][4] != "Apartamento" || lista[0][5] != "Owner")
                 {
-                    //wait
-                    Console.WriteLine($"{Thread.CurrentThread.Name} is requesting access");
-                    mutex.WaitOne();
-                    Console.WriteLine($"{Thread.CurrentThread.Name} is in the protected area");
-
-                    //guardar nos logs que o documento não foi processado pois é invalido
+                   
                     Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
                     bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
 
-                    dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.ERROR.ToString(), Ficheiro = $"{filename}.csv"});
-                    dataContext.SaveChanges();
-
-                    mutex.ReleaseMutex( );
-                    Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
-                    //release
+                    
+                   
 
                     client.GetStream().Write(bRec, 0, bRec.Length);
 
@@ -267,10 +259,6 @@ namespace Aula_2___Sockets___Server
             }
             else
             {
-
-                //Status para os Logs
-                dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.ERROR.ToString(), Ficheiro = $"{filename}.csv" });
-                dataContext.SaveChanges();
                 Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: File already processed!\0\0\0");
 
                 mutex.ReleaseMutex();
