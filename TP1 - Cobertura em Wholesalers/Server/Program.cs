@@ -63,6 +63,8 @@ namespace Aula_2___Sockets___Server
             //Só avança para esta parte do código, depois de um cliente ter se conectado ao servidor
             handle_client(client);
 
+           
+
         }
 
         public static void handle_client(TcpClient client)
@@ -237,10 +239,11 @@ namespace Aula_2___Sockets___Server
                     //Status para os Logs
                     dataContext.Logs.Add(new Logs() { DataInicio = DateTime.Now, Estado = FileStatus.COMPLETED.ToString(), Ficheiro = $"{filename}.csv", Operador = lista[1][0] });
                     dataContext.SaveChanges();
+                    mutex.ReleaseMutex();
 
                     //Guardar na Base de Dados as coberturas
                     GuardarCoberturasBaseDados(coberturas, client, Erros);
-                    mutex.ReleaseMutex();
+                    
                     Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
                     //release
 
