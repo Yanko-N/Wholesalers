@@ -36,6 +36,7 @@ namespace Aula_2___Sockets___Server
         static void Main(string[] args)
         {
             Directory.CreateDirectory("./Coberturas");
+
             //A classe TCPListener implementa os métodos da classe Socket utilizando o protócolo TCP, permitindo uma maior abstração das etapas tipicamente associadas ao Socket.
             TcpListener ServerSocket = new TcpListener(IPAddress.Any, 1337);
             Console.WriteLine($"Listening on: {((IPEndPoint)ServerSocket.LocalEndpoint).Address}:{((IPEndPoint)ServerSocket.LocalEndpoint).Port}");
@@ -52,6 +53,10 @@ namespace Aula_2___Sockets___Server
         public static void MainThread(TcpListener ServerSocket)
         {
 
+           
+
+
+
             //Ciclo infinito para ficar à espera que um cliente Socket/TCP até quando pretender conectar-se
 
             TcpClient client = ServerSocket.AcceptTcpClient();
@@ -63,7 +68,7 @@ namespace Aula_2___Sockets___Server
             //Só avança para esta parte do código, depois de um cliente ter se conectado ao servidor
             handle_client(client);
 
-           
+
 
         }
 
@@ -93,6 +98,9 @@ namespace Aula_2___Sockets___Server
         /// dados recebidos
         /// </summary>
         /// <param name="client"></param>
+        /// <value>O cliente é o CLiente</value>
+
+
         public static void ParseFile(TcpClient client)
         {
             List<string> Erros = new List<string>();
@@ -136,7 +144,7 @@ namespace Aula_2___Sockets___Server
                 //release
 
 
-                var lista = CsvParser.CsvToList($"./Coberturas/{filename}.csv", ';');
+                var lista = CsvParser.CsvToList($"./Coberturas/{filename}.csv",';');
 
                 //Verifico se a 1 linha não contem todos as componentes
                 if (lista[0][0] != "Operador" || lista[0][1] != "Município" || lista[0][2] != "Rua" || lista[0][3] != "Número" || lista[0][4] != "Apartamento" || lista[0][5] != "Owner")
@@ -144,9 +152,6 @@ namespace Aula_2___Sockets___Server
 
                     Console.WriteLine($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
                     bRec = Encoding.UTF8.GetBytes($"{(int)StatusCode.ERROR} - {StatusCode.ERROR}: Invalid File!\0\0\0");
-
-
-
 
                     client.GetStream().Write(bRec, 0, bRec.Length);
 
@@ -243,7 +248,7 @@ namespace Aula_2___Sockets___Server
 
                     //Guardar na Base de Dados as coberturas
                     GuardarCoberturasBaseDados(coberturas, client, Erros);
-                    
+
                     Console.WriteLine($"{Thread.CurrentThread.Name} released the mutex");
                     //release
 
