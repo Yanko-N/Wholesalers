@@ -43,7 +43,6 @@ namespace Aula_2___Sockets___Server {
         }
 
         public static void MainThread(TcpListener ServerSocket) {
-            while (true) {
                 //Ciclo infinito para ficar à espera que um cliente Socket/TCP até quando pretender conectar-se
 
                 TcpClient client = ServerSocket.AcceptTcpClient();
@@ -53,7 +52,6 @@ namespace Aula_2___Sockets___Server {
                 thread.Start();
                 //Só avança para esta parte do código, depois de um cliente ter se conectado ao servidor
                 handle_client(client);
-            }
         }
 
         public static void handle_client(TcpClient client) {
