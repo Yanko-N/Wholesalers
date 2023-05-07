@@ -27,15 +27,18 @@ namespace Aula_2___Sockets___Client {
 
                 data = GetDataFromStream(ClientSocket);
 
-                if (!data.Contains($"{(int)StatusCode.OK} - {StatusCode.OK}")) {
+                //Se a mensagem for diferente de ok deu erro na transmissão
+                if (!data.Contains($"{(int)StatusCode.OK} - {StatusCode.OK}"))
+                {
                     Console.WriteLine($"Error: Expected '{(int)StatusCode.OK} - {StatusCode.OK}' \nClosing connection...");
                     ClientSocket.Client.Shutdown(SocketShutdown.Both);
                     ClientSocket.Close();
+
                     Console.ReadKey();
                     return;
                 }
 
-
+                //Path do documento
                 string path;
                 do {
                     Console.Write("Full Path to File or Drag an Drop File: ");
@@ -52,7 +55,7 @@ namespace Aula_2___Sockets___Client {
 
                 Console.WriteLine(data);
 
-
+                //quit
                 buffer = Encoding.UTF8.GetBytes("QUIT\0\0\0");
                 ClientSocket.GetStream().Write(buffer, 0, buffer.Length);
 
@@ -69,6 +72,12 @@ namespace Aula_2___Sockets___Client {
 
         }
 
+
+        /// <summary>
+        /// Receber resposta do server
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns></returns>
         public static string GetDataFromStream(TcpClient client) {
             byte[] buffer = new byte[1024];
             StringBuilder data = new StringBuilder();
@@ -80,6 +89,10 @@ namespace Aula_2___Sockets___Client {
             return data.ToString();
         }
 
+        /// <summary>
+        /// Conectar a um servidor
+        /// </summary>
+        /// <returns></returns>
         public static TcpClient ConnectServer() {
             TcpClient ClientSocket = new TcpClient();
 
@@ -105,13 +118,22 @@ namespace Aula_2___Sockets___Client {
         }
 
 
+        /// <summary>
+        /// enviar ficheiro para o servidor
+        /// </summary>
+        /// <param name="ClientSocket"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static bool SendFile(TcpClient ClientSocket, string path) {
             try {
+
                 Console.WriteLine($"Sending File: {path}");
                 var buff = Encoding.UTF8.GetBytes(File.ReadAllText(path, Encoding.GetEncoding(1252)) + "\0\0\0");
                 ClientSocket.GetStream().Write(buff, 0, buff.Length);
                 return true;
+
             } catch (FileNotFoundException e) {
+
                 Console.WriteLine(e.Message);
                 return false;
             }
