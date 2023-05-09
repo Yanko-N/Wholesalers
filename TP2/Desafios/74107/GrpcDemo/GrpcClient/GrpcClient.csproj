@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Protos\converter.proto" />
     <None Remove="Protos\greet.proto" />
   </ItemGroup>
 
@@ -22,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <Protobuf Include="Protos\greet.proto" GrpcServices="ClientClient"/>
+	  <Protobuf Include="Protos\converter.proto" GrpcServices="Client" />
+	  <Protobuf Include="Protos\greet.proto" GrpcServices="ClientClient" />
 	
   </ItemGroup>
 
