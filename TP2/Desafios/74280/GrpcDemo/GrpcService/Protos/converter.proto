@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcService";
+
+package converter;
+
+service Converter {
+  rpc F2C (In) returns (Out);
+  rpc C2F (In) returns (Out);
+  rpc D2E (In) returns (Out);
+  rpc E2D (In) returns (Out);
+  rpc K2M (In) returns (Out);
+  rpc M2K (In) returns (Out);
+}
+
+message In {
+  double in = 1;
+}
+
+message Out {
+  double msg = 1;
+}
+
