@@ -3,6 +3,7 @@
 
 using Grpc.Net.Client;
 using GrpcService;
+using GrpcService.Protos;
 using System;
 
 namespace GrpcClient
@@ -11,21 +12,21 @@ namespace GrpcClient
     {
         static async Task Main(string[] args)
         {
-            var input = new In { In_ = 10};
-            var channel = GrpcChannel.ForAddress("https://localhost:7275");
-            var client = new Converter.ConverterClient(channel);
+            var input = new In { In_ = 10 };
+            var channel = GrpcChannel.ForAddress("https://localhost:5190");
+            var client = new converterProtocolo.converterProtocoloClient(channel);
 
-            var reply = await client.C2FAsync(input);
+            var reply = client.Celsius2Fahrenheint(input);
             Console.WriteLine(reply.Msg);
-            reply = await client.F2CAsync(input);
+            reply = client.Fahrenheint2Celsius(input);
             Console.WriteLine(reply.Msg);
-            reply = await client.D2EAsync(input);
+            reply = client.Dollar2Euro(input);
             Console.WriteLine(reply.Msg);
-            reply = await client.E2DAsync(input);
+            reply = client.Euro2Dollar(input);
             Console.WriteLine(reply.Msg);
-            reply = await client.K2MAsync(input);
+            reply = client.Km2Miles(input);
             Console.WriteLine(reply.Msg);
-            reply = await client.M2KAsync(input);
+            reply = client.Miles2Km(input);
             Console.WriteLine(reply.Msg);
 
             Console.ReadLine();
