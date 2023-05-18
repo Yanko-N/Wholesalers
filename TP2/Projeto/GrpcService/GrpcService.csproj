@@ -7,18 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\Auth.proto" GrpcServices="Server" />
+    <None Remove="Protos\AdminActions.proto" />
+    <None Remove="Protos\OperatorActions.proto" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.53.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\AdminActions.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\OperatorActions.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\Auth.proto" GrpcServices="Server" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcService";
+
+package OperatorActions;
+
+service OperatorActions {
+  rpc Reserve (OperatorActionsReserveRequest) returns (OperatorActionsReserveReply);
+  rpc Activate (OperatorActionsRequest) returns (OperatorActionsReply);
+  rpc Deactivate (OperatorActionsRequest) returns (OperatorActionsReply);
+  rpc Terminate (OperatorActionsRequest) returns (OperatorActionsReply);
+}
+
+message OperatorActionsReserveRequest {
+  string municipio = 1;
+  string rua = 2;
+  string numero = 3;
+  string apartamento = 4;
+}
+
+message OperatorActionsReserveReply {
+  string status = 1;
+  string uid = 2;
+}
+
+message OperatorActionsRequest {
+	string uid = 1;
+}
+
+message OperatorActionsReply {
+	string status = 1;
+	string message = 2;
+	int32 et = 3;
+}

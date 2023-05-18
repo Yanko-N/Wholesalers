@@ -19,8 +19,11 @@ namespace GrpcService.Models {
 
         public string Numero { get; set; }
 
-        public string Apartamento { get; set; }
+        public string? Apartamento { get; set; }
 
         public Boolean Owner { get; set; }
+        
+        public string Estado { get; set; }
+        
     }
 }

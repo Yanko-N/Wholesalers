@@ -1,0 +1,43 @@
+syntax = "proto3";
+option csharp_namespace = "GrpcService";
+
+package AdminActions;
+
+service AdminActions {
+  rpc ListAllCoberturas (AdminActionsListAllCoberturas) returns (stream AdminActionsCoberturasReply);
+  rpc ListCoberturasOperator (AdminActionsCoberturasOperatorRequest) returns (stream AdminActionsCoberturasReply);
+  rpc ListServices (AdminActionsServicesRequest) returns (stream AdminActionsServicesReply);
+}
+
+message AdminActionsListAllCoberturas{
+}
+
+message AdminActionsCoberturasReply {
+  string municipio = 1;
+  string rua = 2;
+  string numero = 3;
+  string apartamento = 4;
+  string estado = 5;
+  string operator = 6;
+}
+
+message AdminActionsCoberturasOperatorRequest{
+	string operator = 1;
+}
+
+message AdminActionsServicesRequest{
+	bool active = 1;
+	bool deactivated = 2;
+	bool reserved = 3;
+	bool terminated = 4;
+}
+
+message AdminActionsServicesReply{
+  string municipio = 1;
+  string rua = 2;
+  string numero = 3;
+  string apartamento = 4;
+  string action = 5;
+  string operator = 6;
+  string timestamp = 7;
+ }

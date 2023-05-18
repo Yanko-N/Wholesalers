@@ -25,7 +25,7 @@ namespace GrpcService.Services {
         }
 
         public override Task<AuthReply> Register(AuthUser request, ServerCallContext context) {
-            if(dataContext.Users.FirstOrDefault(u=> u.Username == request.Username) != null) 
+            if (dataContext.Users.FirstOrDefault(u => u.Username == request.Username) != null)
                 return Task.FromResult(new AuthReply {
                     Status = "ERROR",
                     Message = "Username already in use!"

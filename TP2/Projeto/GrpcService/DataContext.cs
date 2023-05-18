@@ -7,6 +7,8 @@ namespace GrpcService {
         public DbSet<Logs> Logs { get; set; }
         public DbSet<Ficheiro> Ficheiros { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Uid> UIDS { get; set; }
+        public DbSet<OperatorActionEvents> OperatorActionEvents { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
