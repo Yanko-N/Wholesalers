@@ -1,18 +1,18 @@
 # **Checklist**
 
 ## **Servidor**
-* [ ] Autenticação
-* [ ] Administração
-* [ ] Database
+* [x] Autenticação
+* [x] Administração
+* [x] Database
 * [ ] Comunicação
 * [ ] Ações
 
 ## **Cliente - Administrador**
-* [ ] Autenticação
+* [x] Autenticação
 * [ ] Ações
 
 ## **Cliente - Operador Externo**
-* [ ] Autenticação
+* [x] Autenticação
 * [ ] Ações
 ---
 # **Ações**

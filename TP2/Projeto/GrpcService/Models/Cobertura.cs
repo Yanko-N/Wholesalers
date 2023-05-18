@@ -22,8 +22,8 @@ namespace GrpcService.Models {
         public string? Apartamento { get; set; }
 
         public Boolean Owner { get; set; }
-        
-        public string Estado { get; set; }
-        
+
+        public string Estado { get; set; } = "ACTIVE";
+
     }
 }
