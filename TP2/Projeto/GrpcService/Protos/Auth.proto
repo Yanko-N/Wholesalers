@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcService";
+
+package Auth;
+
+service Auth {
+  rpc LogIn (AuthUser) returns (AuthReply);
+  rpc Register (AuthUser) returns (AuthReply);
+}
+
+message AuthUser {
+  string username = 1;
+  string password = 2;
+}
+
+message AuthReply {
+  string status = 1;
+  string message = 2;
+}
