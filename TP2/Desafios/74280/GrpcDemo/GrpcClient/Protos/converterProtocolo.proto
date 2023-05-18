@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcService.Protos";
+
+service converterProtocolo {
+  rpc Fahrenheint2Celsius (In) returns (Out);
+  rpc Celsius2Fahrenheint (In) returns (Out);
+  rpc Dollar2Euro (In) returns (Out);
+  rpc Euro2Dollar (In) returns (Out);
+  rpc Km2Miles (In) returns (Out);
+  rpc Miles2Km (In) returns (Out);
+}
+
+message In {
+  double in = 1;
+}
+
+message Out {
+  double msg = 1;
+}
