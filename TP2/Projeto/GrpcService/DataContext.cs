@@ -9,6 +9,7 @@ namespace GrpcService {
         public DbSet<User> Users { get; set; }
         public DbSet<Uid> UIDS { get; set; }
         public DbSet<OperatorActionEvents> OperatorActionEvents { get; set; }
+        public DbSet<UserLoginLogs> UserLoginLogs { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
