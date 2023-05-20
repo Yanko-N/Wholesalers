@@ -9,12 +9,13 @@ namespace GrpcClient {
     class Program {
         static async Task Main(string[] args) {
 
+            //Protos e Grpc Channel
             var channel = GrpcChannel.ForAddress("https://localhost:7275");
             var authClient = new Auth.AuthClient(channel);
             var adminClient = new AdminActions.AdminActionsClient(channel);
             var operatorClient = new OperatorActions.OperatorActionsClient(channel);
 
-
+            //Main Menu System
             bool exit = false;
             while (!exit) {
                 Console.Clear();
@@ -67,6 +68,7 @@ namespace GrpcClient {
                         Console.WriteLine("Exiting the program...");
 
                         break;
+                    
                     default:
                         Console.WriteLine("Invalid choice. Please try again.");
                         Console.ReadLine();

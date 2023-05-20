@@ -13,7 +13,7 @@ namespace GrpcClient
         static async Task Main(string[] args)
         {
             var input = new In { In_ = 10 };
-            var channel = GrpcChannel.ForAddress("https://localhost:5190");
+            var channel = GrpcChannel.ForAddress("https://localhost:7275");
             var client = new converterProtocolo.converterProtocoloClient(channel);
 
             var reply = client.Celsius2Fahrenheint(input);
