@@ -27,14 +27,10 @@ channel.QueueDeclare(queue: "",
                      autoDelete: false,
                      arguments: null);
 
-//SE FOR PRECISO OUTRAS ROUTES É NECESSÁRIO ADICIONAR 
-//Secalhar ir a DB e verificar as operadoras existentes e criar uma queue/ route para casa operadora
-
-
-
-
-// Additional configuration is required to successfully run gRPC on macOS.
-// For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
+/*
+        SE FOR PRECISO OUTRAS ROUTES É NECESSÁRIO ADICIONAR 
+        Secalhar ir a DB e verificar as operadoras existentes e criar uma queue/ route para casa operadora
+*/
 
 // Add services to the container.
 builder.Services.AddGrpc();
@@ -49,6 +45,7 @@ app.MapGet("/", () => "Communication with gRPC endpoints must be made through a 
 app.Run();
 
 
+//Função para enviar mensagem para uma certa queue ou para todos
 void sendMessage(IModel channel,string ? queue,string? message)
 {
     if(queue == null)
