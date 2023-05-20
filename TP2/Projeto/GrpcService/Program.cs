@@ -1,32 +1,35 @@
 using GrpcService.Services;
 using System.Text;
 using RabbitMQ.Client;
-
+using GrpcService;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
 //Rabbit MQ 
-var factory = new ConnectionFactory { HostName = "localhost" };
+var factory = new ConnectionFactory()
+{
+    HostName = "localhost"
+};
+
 using var connection = factory.CreateConnection();
 using var channel = connection.CreateModel();
 
-channel.QueueDeclare(queue: "hello",
+// Declaração da exchange do tipo "topic"
+channel.ExchangeDeclare("EVENT", ExchangeType.Topic);
+
+
+//QUEUE PARA TODOS
+channel.QueueDeclare(queue: "",
                      durable: false,
                      exclusive: false,
                      autoDelete: false,
                      arguments: null);
 
-const string message = "Hello World!";
-var body = Encoding.UTF8.GetBytes(message);
+//SE FOR PRECISO OUTRAS ROUTES É NECESSÁRIO ADICIONAR 
+//Secalhar ir a DB e verificar as operadoras existentes e criar uma queue/ route para casa operadora
 
-channel.BasicPublish(exchange: string.Empty,
-                     routingKey: "hello",
-                     basicProperties: null,
-                     body: body);
-Console.WriteLine($" [x] Sent {message}");
-
-Console.WriteLine(" Press [enter] to exit.");
-Console.ReadLine();
 
 
 
@@ -44,3 +47,19 @@ app.MapGrpcService<AdminActionsService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
 app.Run();
+
+
+void sendMessage(IModel channel,string ? queue,string? message)
+{
+    if(queue == null)
+    {
+        queue = "";
+    }
+    var body = Encoding.UTF8.GetBytes(message);
+
+    channel.BasicPublish(exchange: "EVENT",
+                         routingKey: queue,
+                         basicProperties: null,
+                         body: body);
+    Console.WriteLine($" [Server] Sent {message}");
+}

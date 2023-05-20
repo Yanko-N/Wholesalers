@@ -1,13 +1,36 @@
-﻿//// See https://aka.ms/new-console-template for more information
-//Console.WriteLine("Hello, World!");
-
-using Grpc.Net.Client;
+﻿using Grpc.Net.Client;
 using GrpcService;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using System;
+using System.Text;
+using System.Threading.Channels;
 
-namespace GrpcClient {
-    class Program {
-        static async Task Main(string[] args) {
+namespace GrpcClient
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+
+            //RABBIT MQ CONFIGURATIONS
+
+            // Configuração da conexão com o RabbitMQ
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            using var connection = factory.CreateConnection();
+
+
+            using var channelRabbit = connection.CreateModel();
+
+            // Declaração da exchange do tipo "topic"
+            channelRabbit.ExchangeDeclare("EVENT", ExchangeType.Topic);
+
+            //route mow is empty
+            //Decidir se as routes vão ter o mesmo nome das operadoras ou se toda a gente recebe as notificações
+            ConnectQueue(channelRabbit, "");
+
+
+
 
             //Protos e Grpc Channel
             var channel = GrpcChannel.ForAddress("https://localhost:7275");
@@ -17,7 +40,8 @@ namespace GrpcClient {
 
             //Main Menu System
             bool exit = false;
-            while (!exit) {
+            while (!exit)
+            {
                 Console.Clear();
                 Console.WriteLine("Welcome");
                 Console.WriteLine("Please select an option:");
@@ -27,12 +51,15 @@ namespace GrpcClient {
                 Console.Write("Enter your choice: ");
 
                 string choice = Console.ReadLine();
+                //GRPC de Login
                 var user = new AuthUser();
                 AuthReply reply = new AuthReply();
 
-                switch (choice) {
-                    case "1":
+                switch (choice)
+                {
+                    case "1":   //LOGIN
                         Console.Clear();
+
                         Console.Write("Username: ");
                         user.Username = Console.ReadLine();
                         Console.Write("Password: ");
@@ -44,17 +71,20 @@ namespace GrpcClient {
 
                         break;
 
-                    case "2":
+                    case "2":   //REGISTRO
                         string confirm;
-                        do {
+                        do
+                        {
                             Console.Clear();
+
                             Console.Write("Username: ");
                             user.Username = Console.ReadLine();
                             Console.Write("Password: ");
                             user.Password = Utils.ReadPassword();
                             Console.Write("Confirm Password: ");
                             confirm = Utils.ReadPassword();
-                            if (user.Password != confirm)
+
+                            if (user.Password != confirm) //se as passwords dão match
                                 Console.WriteLine("Passwords do not match!");
                         } while (user.Password != confirm);
 
@@ -68,7 +98,7 @@ namespace GrpcClient {
                         Console.WriteLine("Exiting the program...");
 
                         break;
-                    
+
                     default:
                         Console.WriteLine("Invalid choice. Please try again.");
                         Console.ReadLine();
@@ -79,8 +109,10 @@ namespace GrpcClient {
 
 
 
-            using (var call = adminClient.ListAllCoberturas(new AdminActionsListAllCoberturas())) {
-                while (await call.ResponseStream.MoveNext(CancellationToken.None)) {
+            using (var call = adminClient.ListAllCoberturas(new AdminActionsListAllCoberturas()))
+            {
+                while (await call.ResponseStream.MoveNext(CancellationToken.None))
+                {
                     var curr = call.ResponseStream.Current;
 
                     Console.WriteLine($"{curr.Operator} - {curr.Municipio} {curr.Rua} {curr.Numero} {curr.Apartamento ?? ""} {curr.Estado}");
@@ -92,5 +124,24 @@ namespace GrpcClient {
 
             Console.ReadLine();
         }
+
+        static void ConnectQueue(IModel channelRabbit,string? route)
+        {
+            // Criação de uma fila exclusiva e vinculação à exchange com uma chave de roteamento específica
+            var queueName = channelRabbit.QueueDeclare().QueueName;
+            channelRabbit.QueueBind(queueName, "EVENT", route);
+
+            // Configuração do consumidor para receber as mensagens
+            var consumer = new EventingBasicConsumer(channelRabbit);
+            consumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                Console.WriteLine("\nMensagem recebida: {0}", message);
+            };
+            channelRabbit.BasicConsume(queueName, true, consumer);
+        }
+
     }
+
 }
