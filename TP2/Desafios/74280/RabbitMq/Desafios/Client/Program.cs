@@ -28,12 +28,12 @@ class Client
         {
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
-            Console.WriteLine("Mensagem recebida: {0}", message);
+            Console.WriteLine("\nMensagem recebida: {0}", message);
         };
         channel.BasicConsume(queueName, true, consumer);
 
-       
 
+        Console.Read();
     }
 }
 
