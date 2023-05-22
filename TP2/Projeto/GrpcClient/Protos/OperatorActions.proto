@@ -9,6 +9,7 @@ service OperatorActions {
   rpc Activate (OperatorActionsRequest) returns (OperatorActionsReply);
   rpc Deactivate (OperatorActionsRequest) returns (OperatorActionsReply);
   rpc Terminate (OperatorActionsRequest) returns (OperatorActionsReply);
+  rpc ListUid (OperatorActionUidRequest) returns (stream OperatorActionUidReply);
 }
 
 message OperatorActionsReserveRequest {
@@ -22,7 +23,17 @@ message OperatorActionsReserveReply {
   string status = 1;
   string uid = 2;
 }
+message OperatorActionUidReply{
+	string municipio = 1;
+	string rua = 2;
+	string numero = 3;
+	string apartamento = 4;
+	string Uid = 5;
+}
 
+message OperatorActionUidRequest{
+	string operator = 1;
+}
 message OperatorActionsRequest {
 	string uid = 1;
 }

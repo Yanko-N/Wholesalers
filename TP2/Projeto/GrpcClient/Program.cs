@@ -13,6 +13,7 @@ namespace GrpcClient
         static async Task Main(string[] args)
         {
 
+           /* 
             //RABBIT MQ CONFIGURATIONS
 
             // Configuração da conexão com o RabbitMQ
@@ -25,11 +26,10 @@ namespace GrpcClient
             // Declaração da exchange do tipo "topic"
             channelRabbit.ExchangeDeclare("EVENT", ExchangeType.Topic);
 
-            //route mow is empty
-            //Decidir se as routes vão ter o mesmo nome das operadoras ou se toda a gente recebe as notificações
+
             ConnectQueue(channelRabbit, "");
 
-
+            */
 
 
             //Protos e Grpc Channel
@@ -125,11 +125,11 @@ namespace GrpcClient
             Console.ReadLine();
         }
 
-        static void ConnectQueue(IModel channelRabbit,string? route)
+        static void ConnectRabitMQ(IModel channelRabbit,string topic)
         {
             // Criação de uma fila exclusiva e vinculação à exchange com uma chave de roteamento específica
             var queueName = channelRabbit.QueueDeclare().QueueName;
-            channelRabbit.QueueBind(queueName, "EVENT", route);
+            channelRabbit.QueueBind(queueName, topic, "");
 
             // Configuração do consumidor para receber as mensagens
             var consumer = new EventingBasicConsumer(channelRabbit);
