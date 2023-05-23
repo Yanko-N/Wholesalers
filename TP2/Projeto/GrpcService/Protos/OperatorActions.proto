@@ -23,8 +23,7 @@ message OperatorActionsReserveRequest {
 
 message OperatorActionsReserveReply {
   string status = 1;
-  string message = 2;
-  string uid = 3;
+  string uid = 2;
 }
 message OperatorActionUidReply{
 	string municipio = 1;
@@ -32,8 +31,6 @@ message OperatorActionUidReply{
 	string numero = 3;
 	string apartamento = 4;
 	string Uid = 5;
-	string status = 6;
-	string message = 7;
 }
 
 message OperatorActionUidRequest{
@@ -48,6 +45,5 @@ message OperatorActionsRequest {
 
 message OperatorActionsReply {
 	string status = 1;
-	string message = 2;
 	int32 et = 3;
 }
