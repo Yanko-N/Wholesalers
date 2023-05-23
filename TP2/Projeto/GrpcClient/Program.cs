@@ -72,8 +72,10 @@ namespace GrpcClient
                         if (reply.Status == "OK") {
                             isAdmin = reply.IsAdmin;
                             authToken = reply.Token;
+                            exit = true;
                         }
                         Console.ReadLine();
+                        Console.Clear();
 
                         break;
 
@@ -92,6 +94,7 @@ namespace GrpcClient
 
                             if (user.Password != confirm) //se as passwords dão match
                                 Console.WriteLine("Passwords do not match!");
+                                Console.ReadLine();
                         } while (user.Password != confirm);
 
                         reply = await authClient.RegisterAsync(user);
@@ -102,7 +105,7 @@ namespace GrpcClient
                     case "3":
                         exit = true;
                         Console.WriteLine("Exiting the program...");
-                        break;
+                        return;
                     default:
                         Console.WriteLine("Invalid choice. Please try again.");
                         Console.ReadLine();
