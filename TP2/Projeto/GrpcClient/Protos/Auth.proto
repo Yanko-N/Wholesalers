@@ -17,4 +17,6 @@ message AuthUser {
 message AuthReply {
   string status = 1;
   string message = 2;
+  bool isAdmin = 3;
+string token = 4;
 }

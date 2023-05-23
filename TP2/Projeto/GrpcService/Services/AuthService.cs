@@ -13,11 +13,30 @@ namespace GrpcService.Services {
         public override Task<AuthReply> LogIn(AuthUser request, ServerCallContext context) {
             var user = dataContext.Users.FirstOrDefault(u => u.Username == request.Username);
             if (user != null)
-                if (BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+                if (BCrypt.Net.BCrypt.Verify(request.Password, user.Password)) {
+                    string token = Guid.NewGuid().ToString().Replace("-", "");
+                    dataContext.UserLoginLogs.Add(new UserLoginLogs {
+                        User = request.Username,
+                        Date = DateTime.Now,
+                        LogMessage = "Successfull Login Attempt",
+                        Token = token
+                    });
+                    dataContext.SaveChanges();
                     return Task.FromResult(new AuthReply {
                         Status = "OK",
-                        Message = "Successfully logged in as " + request.Username
+                        Message = "Successfully logged in as " + request.Username,
+                        IsAdmin = user.isAdmin,
+                        Token = token
                     });
+                }
+
+
+            dataContext.UserLoginLogs.Add(new UserLoginLogs {
+                User = request.Username,
+                Date = DateTime.Now,
+                LogMessage = "Failed Login Attempt",
+            });
+            dataContext.SaveChanges();
             return Task.FromResult(new AuthReply {
                 Status = "ERROR",
                 Message = "Invalid Credentials!"
@@ -31,7 +50,7 @@ namespace GrpcService.Services {
                     Message = "Username already in use!"
                 });
             var pwd = BCrypt.Net.BCrypt.HashPassword(request.Password);
-            var user = new User { Username = request.Username, Password = pwd };
+            var user = new User { Username = request.Username, Password = pwd, isAdmin = false};
             dataContext.Users.Add(user);
             dataContext.SaveChanges();
             return Task.FromResult(new AuthReply {

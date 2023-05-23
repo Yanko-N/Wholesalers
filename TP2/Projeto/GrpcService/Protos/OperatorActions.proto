@@ -13,15 +13,18 @@ service OperatorActions {
 }
 
 message OperatorActionsReserveRequest {
-  string municipio = 1;
-  string rua = 2;
-  string numero = 3;
-  string apartamento = 4;
+  string token = 1;
+  string operator = 2;
+  string municipio = 3;
+  string rua = 4;
+  string numero = 5;
+  string apartamento = 6;
 }
 
 message OperatorActionsReserveReply {
   string status = 1;
-  string uid = 2;
+  string message = 2;
+  string uid = 3;
 }
 message OperatorActionUidReply{
 	string municipio = 1;
@@ -29,13 +32,18 @@ message OperatorActionUidReply{
 	string numero = 3;
 	string apartamento = 4;
 	string Uid = 5;
+	string status = 6;
+	string message = 7;
 }
 
 message OperatorActionUidRequest{
-	string operator = 1;
+	string token = 1;
+	string operator = 2;
 }
 message OperatorActionsRequest {
-	string uid = 1;
+	string token = 1;
+	string operator = 2;
+	string uid = 3;
 }
 
 message OperatorActionsReply {

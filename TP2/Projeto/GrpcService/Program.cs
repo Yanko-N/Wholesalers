@@ -14,32 +14,32 @@ public class ServerService
         var builder = WebApplication.CreateBuilder(args);
         var dB = new dataContext();
 
-        #region RABBITMQ
-        var factory = new ConnectionFactory()
-        {
-            HostName = "localhost"
-        };
+        //#region RABBITMQ
+        //var factory = new ConnectionFactory()
+        //{
+        //    HostName = "localhost"
+        //};
 
-        using var connection = factory.CreateConnection();
-        using var channel = connection.CreateModel();
+        //using var connection = factory.CreateConnection();
+        //using var channel = connection.CreateModel();
 
 
 
-        List<string> operadoras = dB.Coberturas.Select(x => x.Operador).Distinct().ToList();
+        //List<string> operadoras = dB.Coberturas.Select(x => x.Operador).Distinct().ToList();
 
-        foreach (var op in operadoras)
-        {
-            // Declaração da exchange do tipo "topic"
-            channel.ExchangeDeclare(op, ExchangeType.Topic);
-        }
-        //QUEUE PARA TODOS
-        channel.QueueDeclare(queue: "",
-                             durable: false,
-                             exclusive: false,
-                             autoDelete: false,
-                             arguments: null);
+        //foreach (var op in operadoras)
+        //{
+        //    // Declaração da exchange do tipo "topic"
+        //    channel.ExchangeDeclare(op, ExchangeType.Topic);
+        //}
+        ////QUEUE PARA TODOS
+        //channel.QueueDeclare(queue: "",
+        //                     durable: false,
+        //                     exclusive: false,
+        //                     autoDelete: false,
+        //                     arguments: null);
 
-        #endregion
+        //#endregion
 
         // Add services to the container.
         builder.Services.AddGrpc();

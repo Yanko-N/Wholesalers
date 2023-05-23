@@ -10,6 +10,8 @@ service AdminActions {
 }
 
 message AdminActionsListAllCoberturas{
+	string token = 1;
+	string operator = 2;
 }
 
 message AdminActionsCoberturasReply {
@@ -22,14 +24,17 @@ message AdminActionsCoberturasReply {
 }
 
 message AdminActionsCoberturasOperatorRequest{
-	string operator = 1;
+	string token = 1;
+	string operator = 2;
 }
 
 message AdminActionsServicesRequest{
-	bool active = 1;
-	bool deactivated = 2;
-	bool reserved = 3;
-	bool terminated = 4;
+	string token = 1;
+	string operator = 2;
+	bool active = 3;
+	bool deactivated = 4;
+	bool reserved = 5;
+	bool terminated = 6;
 }
 
 message AdminActionsServicesReply{

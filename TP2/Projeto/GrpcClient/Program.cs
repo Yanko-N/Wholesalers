@@ -10,8 +10,10 @@ namespace GrpcClient
 {
     class Program
     {
-        static async Task Main(string[] args)
-        {
+        static async Task Main(string[] args) {
+            var user = new AuthUser();
+            string authToken = "";
+            bool isAdmin;
 
            /* 
             //RABBIT MQ CONFIGURATIONS
@@ -52,7 +54,7 @@ namespace GrpcClient
 
                 string choice = Console.ReadLine();
                 //GRPC de Login
-                var user = new AuthUser();
+                
                 AuthReply reply = new AuthReply();
 
                 switch (choice)
@@ -67,6 +69,10 @@ namespace GrpcClient
 
                         reply = await authClient.LogInAsync(user);
                         Console.WriteLine($"{reply.Status} - {reply.Message}");
+                        if (reply.Status == "OK") {
+                            isAdmin = reply.IsAdmin;
+                            authToken = reply.Token;
+                        }
                         Console.ReadLine();
 
                         break;
@@ -96,9 +102,7 @@ namespace GrpcClient
                     case "3":
                         exit = true;
                         Console.WriteLine("Exiting the program...");
-
                         break;
-
                     default:
                         Console.WriteLine("Invalid choice. Please try again.");
                         Console.ReadLine();
@@ -109,7 +113,10 @@ namespace GrpcClient
 
 
 
-            using (var call = adminClient.ListAllCoberturas(new AdminActionsListAllCoberturas()))
+            using (var call = adminClient.ListAllCoberturas(new AdminActionsListAllCoberturas {
+                       Operator = user.Username,
+                       Token = authToken
+                   }))
             {
                 while (await call.ResponseStream.MoveNext(CancellationToken.None))
                 {
