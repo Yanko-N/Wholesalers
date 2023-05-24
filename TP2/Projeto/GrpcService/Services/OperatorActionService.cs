@@ -158,6 +158,7 @@ namespace GrpcService.Services
                         var response = new OperatorActionsReserveReply
                         {
                             Status = "OK",
+                            Uid = DbContext.UIDS.Include(m=>m.Cobertura).FirstOrDefault(m => m.Cobertura == morada).UID
 
                         };
                         return Task.FromResult(response);
@@ -228,7 +229,7 @@ namespace GrpcService.Services
                         var response = new OperatorActionsReply
                         {
                             Status = "Error",
-                            Et = 3
+                            Et = 0
                         };
                         return Task.FromResult(response);
                     }
@@ -238,7 +239,7 @@ namespace GrpcService.Services
                     var response = new OperatorActionsReply
                     {
                         Status = "ERROR",
-                        Et = 3
+                        Et = 0
                     };
                     return Task.FromResult(response);
 
@@ -249,7 +250,7 @@ namespace GrpcService.Services
                 var response = new OperatorActionsReply
                 {
                     Status = "ERROR",
-                    Et = 3
+                    Et = 0
                 };
                 return Task.FromResult(response);
 
