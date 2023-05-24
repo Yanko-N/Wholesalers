@@ -1,4 +1,5 @@
 ﻿using Azure;
+using Azure.Core;
 using Grpc.Core;
 using GrpcService.Models;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +10,6 @@ namespace GrpcService.Services
     public class OperatorActionService : OperatorActions.OperatorActionsBase
     {
         public dataContext DbContext = new dataContext();
-        //Maybe colocar mutex 
-
-        //COLOCAR FUNÇÕES ASSINCRONAS
-
-
 
         public override Task<OperatorActionsReply> Activate(OperatorActionsRequest request, ServerCallContext context)
         {
@@ -25,33 +21,11 @@ namespace GrpcService.Services
                 {
                     var UID = DbContext.UIDS.Include(m => m.UID).Include(m => m.Cobertura).FirstOrDefault(u => u.UID == request.Uid);
                     var morada = DbContext.Coberturas.FirstOrDefault(m => m.Id == UID.Cobertura.Id);
-                    if (morada != null && (morada.Estado =="RESERVED" || morada.Estado== " DEACTIVATED"))
+                    if (morada != null && (morada.Estado == "RESERVED" || morada.Estado == " DEACTIVATED"))
                     {
-                        //N está ASSINCRONO
-                        morada.Estado = "ACTIVE";
 
-                        //Apos a reserva será adicionado aos LOGS 
-                        var logOperatorEvent = new OperatorActionEvents
-                        {
-                            Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
-                            Action = "ACTIVE",
-                            Cobertura = morada,
-                            Date = DateTime.Now
-                        };
-
-                        var message = $"The {request.Operator} was ACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
-
-
-
-
-                        DbContext.OperatorActionEvents.Add(logOperatorEvent);
-                        DbContext.Update(morada);
-
-                        DbContext.SaveChangesAsync();
-
-
-                        RabbitService.SendMessage(request.Operator, message);
-
+                        Thread thread = new Thread(() => Active(morada, request));
+                        thread.Start();
                         var response = new OperatorActionsReply
                         {
                             Status = "OK",
@@ -108,32 +82,10 @@ namespace GrpcService.Services
                 {
                     var UID = DbContext.UIDS.Include(m => m.UID).Include(m => m.Cobertura).FirstOrDefault(u => u.UID == request.Uid);
                     var morada = DbContext.Coberturas.FirstOrDefault(m => m.Id == UID.Cobertura.Id);
-                    if (morada != null && ( morada.Estado == " ACTIVE"))
+                    if (morada != null && (morada.Estado == " ACTIVE"))
                     {
-                        //N está ASSINCRONO
-                        morada.Estado = "DEACTIVATED";
-
-                        //Apos a reserva será adicionado aos LOGS 
-                        var logOperatorEvent = new OperatorActionEvents
-                        {
-                            Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
-                            Action = "DEACTIVATED",
-                            Cobertura = morada,
-                            Date = DateTime.Now
-                        };
-
-                        var message = $"The {request.Operator} was DEACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
-
-
-
-
-                        DbContext.OperatorActionEvents.Add(logOperatorEvent);
-                        DbContext.Update(morada);
-
-                        DbContext.SaveChangesAsync();
-
-
-                        RabbitService.SendMessage(request.Operator, message);
+                        Thread thread = new Thread(() => Desativar(morada, request));
+                        thread.Start();
 
                         var response = new OperatorActionsReply
                         {
@@ -181,8 +133,7 @@ namespace GrpcService.Services
             }
         }
 
-        public override Task<OperatorActionsReserveReply> Reserve(OperatorActionsReserveRequest request,
-            ServerCallContext context)
+        public override Task<OperatorActionsReserveReply> Reserve(OperatorActionsReserveRequest request, ServerCallContext context)
         {
 
             if (!String.IsNullOrWhiteSpace(request.Operator) && !String.IsNullOrWhiteSpace(request.Token))
@@ -201,29 +152,8 @@ namespace GrpcService.Services
 
                     if (morada != null)
                     {
-                        morada.Modalidade = request.Modalidade;
-                        morada.Estado = "RESERVED";
-                        //Apos a reserva será adicionado aos LOGS 
-                        var logOperatorEvent = new OperatorActionEvents
-                        {
-                            Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
-                            Action = "RESERVE",
-                            Cobertura = morada,
-                            Date = DateTime.Now
-                        };
-
-                        var message = $"The {request.Operator} was RESERVED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
-
-
-
-
-                        DbContext.OperatorActionEvents.Add(logOperatorEvent);
-                        DbContext.Update(morada);
-
-                        DbContext.SaveChangesAsync();
-
-
-                        RabbitService.SendMessage(request.Operator, message);
+                        Thread thread= new Thread(()=> Reservar(morada, request));
+                        thread.Start();
 
                         var response = new OperatorActionsReserveReply
                         {
@@ -280,27 +210,11 @@ namespace GrpcService.Services
 
                     if (morada != null && morada.Estado == "ACTIVE")
                     {
-                        //N está ASSINCRONO
 
+                        Thread thread = new Thread(() => Terminar(morada, request));
+                        thread.Start();
 
-                        morada.Estado = "TERMINATED";
-                        //Apos a Terminação será adicionado aos LOGS 
-                        var logOperatorEvent = new OperatorActionEvents
-                        {
-                            Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
-                            Action = "TERMINATE",
-                            Cobertura = morada,
-                            Date = DateTime.Now
-                        };
-
-                        var message = $"The {request.Operator} was TERMINATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
-
-                        DbContext.OperatorActionEvents.Add(logOperatorEvent);
-                        DbContext.Update(morada);
-
-                        DbContext.SaveChangesAsync();
-
-                        RabbitService.SendMessage(request.Operator, message);
+                       
 
                         var response = new OperatorActionsReply
                         {
@@ -343,8 +257,7 @@ namespace GrpcService.Services
 
         }
 
-        public override async Task ListUid(OperatorActionUidRequest request,
-            IServerStreamWriter<OperatorActionUidReply> responseStream, ServerCallContext context)
+        public override async Task ListUid(OperatorActionUidRequest request, IServerStreamWriter<OperatorActionUidReply> responseStream, ServerCallContext context)
         {
 
             if (!String.IsNullOrWhiteSpace(request.Operator) && !String.IsNullOrWhiteSpace(request.Token))
@@ -375,5 +288,114 @@ namespace GrpcService.Services
 
             }
         }
+
+
+        public void Active(Cobertura morada,OperatorActionsRequest request)
+        {
+
+            Thread.Sleep(3);
+            //N está ASSINCRONO
+            morada.Estado = "ACTIVE";
+
+            //Apos a reserva será adicionado aos LOGS 
+            var logOperatorEvent = new OperatorActionEvents
+            {
+                Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
+                Action = "ACTIVE",
+                Cobertura = morada,
+                Date = DateTime.Now
+            };
+
+            var message = $"The {request.Operator} was ACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+
+
+
+
+            DbContext.OperatorActionEvents.Add(logOperatorEvent);
+            DbContext.Update(morada);
+
+            DbContext.SaveChangesAsync();
+
+
+            RabbitService.SendMessage(request.Operator, message);
+        }
+        public  void Desativar(Cobertura morada,OperatorActionsRequest request)
+        {
+            Thread.Sleep(3);
+            //N está ASSINCRONO
+            morada.Estado = "DEACTIVATED";
+
+            //Apos a reserva será adicionado aos LOGS 
+            var logOperatorEvent = new OperatorActionEvents
+            {
+                Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
+                Action = "DEACTIVATED",
+                Cobertura = morada,
+                Date = DateTime.Now
+            };
+
+            var message = $"The {request.Operator} was DEACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+
+
+
+
+            DbContext.OperatorActionEvents.Add(logOperatorEvent);
+            DbContext.Update(morada);
+
+            DbContext.SaveChangesAsync();
+
+
+            RabbitService.SendMessage(request.Operator, message);
+        }
+        public  void Reservar(Cobertura morada,OperatorActionsReserveRequest request)
+        {
+            Thread.Sleep(3);
+            morada.Modalidade = request.Modalidade;
+            morada.Estado = "RESERVED";
+            //Apos a reserva será adicionado aos LOGS 
+            var logOperatorEvent = new OperatorActionEvents
+            {
+                Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
+                Action = "RESERVE",
+                Cobertura = morada,
+                Date = DateTime.Now
+            };
+
+            var message = $"The {request.Operator} was RESERVED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+
+
+
+
+            DbContext.OperatorActionEvents.Add(logOperatorEvent);
+            DbContext.Update(morada);
+
+            DbContext.SaveChangesAsync();
+
+
+            RabbitService.SendMessage(request.Operator, message);
+        }
+        public void Terminar(Cobertura morada, OperatorActionsRequest request)
+        {
+            Thread.Sleep(3);
+            morada.Estado = "TERMINATED";
+            //Apos a Terminação será adicionado aos LOGS 
+            var logOperatorEvent = new OperatorActionEvents
+            {
+                Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
+                Action = "TERMINATE",
+                Cobertura = morada,
+                Date = DateTime.Now
+            };
+
+            var message = $"The {request.Operator} was TERMINATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+
+            DbContext.OperatorActionEvents.Add(logOperatorEvent);
+            DbContext.Update(morada);
+
+            DbContext.SaveChangesAsync();
+
+            RabbitService.SendMessage(request.Operator, message);
+        }
+
     }
 }
