@@ -12,9 +12,12 @@ namespace GrpcService.Services {
             ServerCallContext context) {
 
             if (!String.IsNullOrWhiteSpace(request.Operator) && !String.IsNullOrWhiteSpace(request.Token)) {
+
                 if (dataContext.Users.First(u => u.Username == request.Operator).isAdmin) {
+
                     var logs = dataContext.UserLoginLogs.OrderByDescending(d => d.Date)
                         .FirstOrDefault(u => u.User == request.Operator);
+
                     if (logs?.Token == request.Token) {
 
                         var coberturas = dataContext.Coberturas.Where(c => c.Estado != "TERMINATED");
@@ -38,10 +41,14 @@ namespace GrpcService.Services {
         public override async Task ListCoberturasOperator(AdminActionsCoberturasOperatorRequest request,
             IServerStreamWriter<AdminActionsCoberturasReply> responseStream,
             ServerCallContext context) {
+
             if (!String.IsNullOrWhiteSpace(request.Operator) && !String.IsNullOrWhiteSpace(request.Token)) {
+
                 if (dataContext.Users.First(u => u.Username == request.Operator).isAdmin) {
+
                     var logs = dataContext.UserLoginLogs.OrderByDescending(d => d.Date)
                         .FirstOrDefault(u => u.User == request.Operator);
+
                     if (logs?.Token == request.Token) {
                         var coberturas =
                             dataContext.Coberturas.Where(
