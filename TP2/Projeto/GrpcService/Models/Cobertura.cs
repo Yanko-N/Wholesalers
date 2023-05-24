@@ -25,5 +25,7 @@ namespace GrpcService.Models {
 
         public string Estado { get; set; } = "ACTIVE";
 
+        public string? Modalidade { get; set; }
+
     }
 }

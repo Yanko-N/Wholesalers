@@ -19,6 +19,7 @@ message OperatorActionsReserveRequest {
   string rua = 4;
   string numero = 5;
   string apartamento = 6;
+  string Modalidade = 7;
 }
 
 message OperatorActionsReserveReply {
