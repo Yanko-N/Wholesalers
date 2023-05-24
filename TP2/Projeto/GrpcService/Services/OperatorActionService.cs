@@ -34,12 +34,12 @@ namespace GrpcService.Services
                         var logOperatorEvent = new OperatorActionEvents
                         {
                             Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
-                            Action = "RESERVE",
+                            Action = "ACTIVE",
                             Cobertura = morada,
                             Date = DateTime.Now
                         };
 
-                        var message = $"The {request.Operator} was RESERVED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+                        var message = $"The {request.Operator} was ACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
 
 
 
@@ -100,7 +100,85 @@ namespace GrpcService.Services
 
         public override Task<OperatorActionsReply> Deactivate(OperatorActionsRequest request, ServerCallContext context)
         {
-            return base.Deactivate(request, context);
+            if (!String.IsNullOrWhiteSpace(request.Operator) && !String.IsNullOrWhiteSpace(request.Token))
+            {
+                var logs = DbContext.UserLoginLogs.OrderByDescending(d => d.Date).FirstOrDefault(u => u.User == request.Operator);
+
+                if (logs?.Token == request.Token)
+                {
+                    var UID = DbContext.UIDS.Include(m => m.UID).Include(m => m.Cobertura).FirstOrDefault(u => u.UID == request.Uid);
+                    var morada = DbContext.Coberturas.FirstOrDefault(m => m.Id == UID.Cobertura.Id);
+                    if (morada != null && ( morada.Estado == " ACTIVE"))
+                    {
+                        //N está ASSINCRONO
+                        morada.Estado = "DEACTIVATED";
+
+                        //Apos a reserva será adicionado aos LOGS 
+                        var logOperatorEvent = new OperatorActionEvents
+                        {
+                            Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
+                            Action = "DEACTIVATED",
+                            Cobertura = morada,
+                            Date = DateTime.Now
+                        };
+
+                        var message = $"The {request.Operator} was DEACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+
+
+
+
+                        DbContext.OperatorActionEvents.Add(logOperatorEvent);
+                        DbContext.Update(morada);
+
+                        DbContext.SaveChangesAsync();
+
+
+                        RabbitService.SendMessage(request.Operator, message);
+
+                        var response = new OperatorActionsReply
+                        {
+                            Status = "OK",
+                            Et = 3
+
+                        };
+                        return Task.FromResult(response);
+
+
+                    }
+                    else
+                    {
+                        var response = new OperatorActionsReply
+                        {
+                            Status = "ERROR",
+                            Et = 0
+                        };
+
+                        return Task.FromResult(response);
+                    }
+
+
+                }
+                else
+                {
+                    var response = new OperatorActionsReply
+                    {
+                        Status = "ERROR",
+                        Et = 0
+                    };
+
+                    return Task.FromResult(response);
+                }
+            }
+            else
+            {
+                var response = new OperatorActionsReply
+                {
+                    Status = "ERROR",
+                    Et = 0
+                };
+
+                return Task.FromResult(response);
+            }
         }
 
         public override Task<OperatorActionsReserveReply> Reserve(OperatorActionsReserveRequest request,
