@@ -316,21 +316,6 @@ namespace GrpcClient {
             }
         }
 
-        static void ConnectRabitMQ(IModel channelRabbit, string topic) {
-            // Criação de uma fila exclusiva e vinculação à exchange com uma chave de roteamento específica
-            var queueName = channelRabbit.QueueDeclare().QueueName;
-            channelRabbit.QueueBind(queueName, topic, "");
-
-            // Configuração do consumidor para receber as mensagens
-            var consumer = new EventingBasicConsumer(channelRabbit);
-            consumer.Received += (model, ea) => {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine("\nMensagem recebida: {0}", message);
-            };
-            channelRabbit.BasicConsume(queueName, true, consumer);
-        }
-
     }
 
 }
