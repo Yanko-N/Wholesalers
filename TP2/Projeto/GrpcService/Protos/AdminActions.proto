@@ -26,6 +26,7 @@ message AdminActionsCoberturasReply {
 message AdminActionsCoberturasOperatorRequest{
 	string token = 1;
 	string operator = 2;
+	string operatorsearch = 3;
 }
 
 message AdminActionsServicesRequest{

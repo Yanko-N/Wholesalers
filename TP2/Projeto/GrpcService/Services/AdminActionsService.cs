@@ -52,7 +52,7 @@ namespace GrpcService.Services {
                     if (logs?.Token == request.Token) {
                         var coberturas =
                             dataContext.Coberturas.Where(
-                                c => c.Estado != "TERMINATED" && c.Operador == request.Operator);
+                                c => c.Estado != "TERMINATED" && c.Operador == request.Operatorsearch);
 
                         foreach (var c in coberturas) {
                             var temp = new AdminActionsCoberturasReply {
