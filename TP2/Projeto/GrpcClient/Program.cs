@@ -84,7 +84,7 @@ namespace GrpcClient
                             }
                         }
 
-                        Console.WriteLine("Que Morada Deseja Ativar :");
+                        Console.WriteLine("What adress to you want to Activate? :");
                         do
                         {
                             adressUid = Console.ReadLine();
@@ -117,7 +117,7 @@ namespace GrpcClient
                         }
 
 
-                        Console.WriteLine("Que Morada Deseja Ativar :");
+                        Console.WriteLine("What adress do you want to desactivate?:");
                         do
                         {
                             adressUid = Console.ReadLine();
@@ -136,7 +136,53 @@ namespace GrpcClient
 
                         break;
                     case "3":
-                        Console.WriteLine("RESERVE");
+                        using (var listUID = operatorClient.ListUid(new OperatorActionUidRequest
+                        {
+                            Operator = user.Username,
+                            Token = authToken
+                        }))
+                        {
+                            while (await listUID.ResponseStream.MoveNext(CancellationToken.None))
+                            {
+                                var curr = listUID.ResponseStream.Current;
+                                UIDS.Add(curr);
+                                Console.WriteLine($"{curr.Municipio} {curr.Rua} {curr.Numero} {curr.Apartamento ?? ""} the uid code is: {curr.Uid}");
+
+                            }
+                        }
+
+
+                        Console.WriteLine("What adress do you want to Reserve ?:");
+                        do
+                        {
+                            adressUid = Console.ReadLine();
+                        } while (!UIDS.Any(m => m.Uid == adressUid));
+
+
+                        string modalidade,certeza;
+                        do {
+                            Console.WriteLine("What is the modality that you want the adress to have?:");
+
+                            modalidade = Console.ReadLine();
+
+                            Console.WriteLine("Are you sure this is the correct Value?:");
+
+                            certeza = Console.ReadLine();
+                        } while (!certeza.Contains("Sim") || !certeza.Contains("Yes"));
+
+                        var call4 = operatorClient.Reserve(new OperatorActionsReserveRequest
+                        {
+                            Operator = user.Username,
+                            Token = authToken,
+                            Apartamento = UIDS.FirstOrDefault(m => m.Uid == adressUid).Apartamento,
+                            Municipio = UIDS.FirstOrDefault(m => m.Uid == adressUid).Municipio,
+                            Rua = UIDS.FirstOrDefault(m => m.Uid == adressUid).Rua,
+                            Numero = UIDS.FirstOrDefault(m => m.Uid == adressUid).Numero,
+                            Modalidade = modalidade
+                        }); ;
+
+                        Console.WriteLine($"{call4.Status}: {call4.Uid}");
+                        UIDS.Clear();
                         break;
                     case "4":
                         Console.WriteLine("TERMINAR");
