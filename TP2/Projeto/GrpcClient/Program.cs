@@ -14,25 +14,6 @@ namespace GrpcClient {
             string authToken = "";
             bool isAdmin;
 
-            /* 
-             //RABBIT MQ CONFIGURATIONS
-
-             // Configuração da conexão com o RabbitMQ
-             var factory = new ConnectionFactory() { HostName = "localhost" };
-             using var connection = factory.CreateConnection();
-
-
-             using var channelRabbit = connection.CreateModel();
-
-             // Declaração da exchange do tipo "topic"
-             channelRabbit.ExchangeDeclare("EVENT", ExchangeType.Topic);
-
-
-             ConnectQueue(channelRabbit, "");
-
-             */
-
-
             LoginMenu(channel).ContinueWith((task) => {
                 user = task.Result.user;
                 isAdmin = task.Result.isAdmin ?? false;
@@ -155,20 +136,6 @@ namespace GrpcClient {
             return (user, isAdmin, authToken);
         }
 
-        static void ConnectRabitMQ(IModel channelRabbit, string topic) {
-            // Criação de uma fila exclusiva e vinculação à exchange com uma chave de roteamento específica
-            var queueName = channelRabbit.QueueDeclare().QueueName;
-            channelRabbit.QueueBind(queueName, topic, "");
-
-            // Configuração do consumidor para receber as mensagens
-            var consumer = new EventingBasicConsumer(channelRabbit);
-            consumer.Received += (model, ea) => {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine("\nMensagem recebida: {0}", message);
-            };
-            channelRabbit.BasicConsume(queueName, true, consumer);
-        }
 
     }
 
