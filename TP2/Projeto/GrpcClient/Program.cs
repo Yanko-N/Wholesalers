@@ -14,25 +14,6 @@ namespace GrpcClient {
             string authToken = "";
             bool isAdmin = false;
 
-            /* 
-             //RABBIT MQ CONFIGURATIONS
-
-             // Configuração da conexão com o RabbitMQ
-             var factory = new ConnectionFactory() { HostName = "localhost" };
-             using var connection = factory.CreateConnection();
-
-
-             using var channelRabbit = connection.CreateModel();
-
-             // Declaração da exchange do tipo "topic"
-             channelRabbit.ExchangeDeclare("EVENT", ExchangeType.Topic);
-
-
-             ConnectQueue(channelRabbit, "");
-
-             */
-
-
             LoginMenu(channel).ContinueWith((task) => {
                 user = task.Result.user;
                 isAdmin = task.Result.isAdmin ?? false;
