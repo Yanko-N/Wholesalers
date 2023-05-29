@@ -140,11 +140,11 @@ namespace GrpcClient {
                         break;
                     case "2":
                         string? mun, rua, n, apt, mod;
-                        Console.Write("Reserving address\nMunicipio:");
+                        Console.Write("Reserving address\nMunicipio: ");
                         mun = Console.ReadLine();
                         Console.Write("Rua: ");
                         rua = Console.ReadLine();
-                        Console.Write("Numero:");
+                        Console.Write("Numero: ");
                         n = Console.ReadLine();
                         Console.Write("Apartamento: ");
                         apt = Console.ReadLine();
@@ -436,10 +436,10 @@ namespace GrpcClient {
                             Console.Clear(); // Clear the console screen
 
                             Console.WriteLine("Select services status to display:");
-                            Console.WriteLine("1. Active (" + (active ? "Selected" : "Not Selected") + ")");
-                            Console.WriteLine("2. Deactivated (" + (deactivated ? "Selected" : "Not Selected") + ")");
-                            Console.WriteLine("3. Reserved (" + (reserved ? "Selected" : "Not Selected") + ")");
-                            Console.WriteLine("4. Terminated (" + (terminated ? "Selected" : "Not Selected") + ")");
+                            Console.WriteLine("1. Activate (" + (active ? "Selected" : "Not Selected") + ")");
+                            Console.WriteLine("2. Deactivate (" + (deactivated ? "Selected" : "Not Selected") + ")");
+                            Console.WriteLine("3. Reserve (" + (reserved ? "Selected" : "Not Selected") + ")");
+                            Console.WriteLine("4. Terminate (" + (terminated ? "Selected" : "Not Selected") + ")");
                             Console.WriteLine("5. Done");
 
                             Console.Write("Enter your choice: ");
@@ -448,19 +448,19 @@ namespace GrpcClient {
                             switch (service) {
                                 case "1":
                                     active = !active;
-                                    Console.WriteLine("Active " + (active ? "selected." : "deselected."));
+                                    Console.WriteLine("Activate " + (active ? "selected." : "deselected."));
                                     break;
                                 case "2":
                                     deactivated = !deactivated;
-                                    Console.WriteLine("Deactivated " + (deactivated ? "selected." : "deselected."));
+                                    Console.WriteLine("Deactivate " + (deactivated ? "selected." : "deselected."));
                                     break;
                                 case "3":
                                     reserved = !reserved;
-                                    Console.WriteLine("Reserved " + (reserved ? "selected." : "deselected."));
+                                    Console.WriteLine("Reserve " + (reserved ? "selected." : "deselected."));
                                     break;
                                 case "4":
                                     terminated = !terminated;
-                                    Console.WriteLine("Terminated " + (terminated ? "selected." : "deselected."));
+                                    Console.WriteLine("Terminate " + (terminated ? "selected." : "deselected."));
                                     break;
                                 case "5":
                                     done = true;
@@ -474,13 +474,13 @@ namespace GrpcClient {
 
                         List<string> selectedServices = new List<string>();
                         if (active)
-                            selectedServices.Add("Active");
+                            selectedServices.Add("Activate");
                         if (deactivated)
-                            selectedServices.Add("Deactivated");
+                            selectedServices.Add("Deactivate");
                         if (reserved)
-                            selectedServices.Add("Reserved");
+                            selectedServices.Add("Reserve");
                         if (terminated)
-                            selectedServices.Add("Terminated");
+                            selectedServices.Add("Terminate");
 
                         Console.WriteLine("Services to be displayed: " + string.Join(", ", selectedServices) + "\n");
 
