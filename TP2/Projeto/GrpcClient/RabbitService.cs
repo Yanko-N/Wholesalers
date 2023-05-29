@@ -20,7 +20,7 @@ namespace GrpcClient
         public static IModel channelRabbit = connection.CreateModel();
 
 
-        static void ConnectRabitMQ(string topic)
+       public static void ConnectRabitMQ(string topic)
         {
 
             channelRabbit.ExchangeDeclare(exchange: topic, type: ExchangeType.Topic);

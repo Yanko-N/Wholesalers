@@ -14,7 +14,7 @@ public class ServerService
         var builder = WebApplication.CreateBuilder(args);
         var dB = new dataContext();
 
-        //RabbitService.CreateTopics();
+        RabbitService.CreateTopics();
 
         // Add services to the container.
         builder.Services.AddGrpc();

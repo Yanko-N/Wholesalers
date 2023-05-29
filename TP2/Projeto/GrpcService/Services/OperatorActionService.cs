@@ -40,7 +40,7 @@ namespace GrpcService.Services
                     {
                         var response = new OperatorActionsReply
                         {
-                            Status = "ERROR",
+                            Status = "ERROR The adress or is Reserved or is Deactivated",
                             Et = 0
                         };
 
@@ -53,7 +53,7 @@ namespace GrpcService.Services
                 {
                     var response = new OperatorActionsReply
                     {
-                        Status = "ERROR",
+                        Status = "ERROR the Login no longer is accepted",
                         Et = 0
                     };
 
@@ -64,7 +64,7 @@ namespace GrpcService.Services
             {
                 var response = new OperatorActionsReply
                 {
-                    Status = "ERROR",
+                    Status = "ERROR Bad Request",
                     Et = 0
                 };
 
@@ -101,7 +101,7 @@ namespace GrpcService.Services
                     {
                         var response = new OperatorActionsReply
                         {
-                            Status = "ERROR",
+                            Status = "ERROR the adress isn't Active",
                             Et = 0
                         };
 
@@ -114,7 +114,7 @@ namespace GrpcService.Services
                 {
                     var response = new OperatorActionsReply
                     {
-                        Status = "ERROR",
+                        Status = "ERROR the Login is no longer accepted",
                         Et = 0
                     };
 
@@ -125,7 +125,7 @@ namespace GrpcService.Services
             {
                 var response = new OperatorActionsReply
                 {
-                    Status = "ERROR",
+                    Status = "ERROR Bad Request",
                     Et = 0
                 };
 
@@ -133,8 +133,7 @@ namespace GrpcService.Services
             }
         }
 
-        public override async Task<OperatorActionsReserveReply> Reserve(OperatorActionsReserveRequest request,
-            ServerCallContext context) {
+        public override async Task<OperatorActionsReserveReply> Reserve(OperatorActionsReserveRequest request,ServerCallContext context) {
                 if (!String.IsNullOrWhiteSpace(request.Operator) && !String.IsNullOrWhiteSpace(request.Token)) {
                 var logs = DbContext.UserLoginLogs.OrderByDescending(d => d.Date)
                     .FirstOrDefault(u => u.User == request.Operator);
@@ -246,7 +245,7 @@ namespace GrpcService.Services
                     {
                         var response = new OperatorActionsReply
                         {
-                            Status = "Error",
+                            Status = "Error the adress ins't Deactivated",
                             Et = 0
                         };
                         return Task.FromResult(response);
@@ -256,7 +255,7 @@ namespace GrpcService.Services
                 {
                     var response = new OperatorActionsReply
                     {
-                        Status = "ERROR",
+                        Status = "ERROR The login is no longer accepted",
                         Et = 0
                     };
                     return Task.FromResult(response);
@@ -267,7 +266,7 @@ namespace GrpcService.Services
             {
                 var response = new OperatorActionsReply
                 {
-                    Status = "ERROR",
+                    Status = "ERROR Bad Request",
                     Et = 0
                 };
                 return Task.FromResult(response);
@@ -312,7 +311,7 @@ namespace GrpcService.Services
         public void Active(Cobertura morada,OperatorActionsRequest request)
         {
 
-            Thread.Sleep(3);
+            Thread.Sleep(3000);
             //N está ASSINCRONO
             morada.Estado = "ACTIVE";
 
@@ -340,7 +339,7 @@ namespace GrpcService.Services
         }
         public  void Desativar(Cobertura morada,OperatorActionsRequest request)
         {
-            Thread.Sleep(3);
+            Thread.Sleep(3000);
             //N está ASSINCRONO
             morada.Estado = "DEACTIVATED";
 
@@ -368,7 +367,7 @@ namespace GrpcService.Services
         }
         public void Terminar(Cobertura morada, OperatorActionsRequest request)
         {
-            Thread.Sleep(3);
+            Thread.Sleep(3000);
             morada.Estado = "TERMINATED";
             //Apos a Terminação será adicionado aos LOGS 
             var logOperatorEvent = new OperatorActionEvents
