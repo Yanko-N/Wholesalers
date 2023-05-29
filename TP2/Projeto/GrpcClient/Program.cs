@@ -13,6 +13,7 @@ namespace GrpcClient
     {
         static async Task Main(string[] args)
         {
+
             var channel = GrpcChannel.ForAddress("https://localhost:7275");
             var user = new AuthUser();
             string authToken = "";
@@ -46,104 +47,235 @@ namespace GrpcClient
 
         static async Task OperatorMenu(GrpcChannel channel, AuthUser user, string authToken)
         {
-            bool exit = false;
             var operatorClient = new OperatorActions.OperatorActionsClient(channel);
-            while (!exit)
-            {
+
+            Dictionary<int, OperatorActionUidReply> UIDS = new Dictionary<int, OperatorActionUidReply>();
+            OperatorActionUidReply? selectedAddress = null;
+            
+            bool exit = false;
+            while (!exit) {
+                int i = 0;
+                UIDS.Clear();
+                using (var call = operatorClient.ListUid(new OperatorActionUidRequest {
+                           Operator = user.Username,
+                           Token = authToken
+                       })) {
+                    while (await call.ResponseStream.MoveNext(CancellationToken.None)) {
+                        i++;
+                        var curr = call.ResponseStream.Current;
+                        UIDS.Add(i, curr);
+                    }
+                }
                 Console.Clear();
 
-                Console.WriteLine("Operator Options:");
-                Console.WriteLine("1. Activate adress");
-                Console.WriteLine("2. Desactivate adress");
-                Console.WriteLine("3. Reserve adress");
-                Console.WriteLine("4. Terminate adress");
-                Console.WriteLine("5. Exit");
-                Console.Write("Enter your choice: ");
+                if (selectedAddress == null) {
+                    Console.WriteLine("Menu Options:");
+                    Console.WriteLine("1. Select / List UIDs");
+                    Console.WriteLine("2. Reserve");
+                } else {
+                    Console.WriteLine($"Selected Adress: {selectedAddress.Municipio} - {selectedAddress.Rua} {selectedAddress.Numero} " + (String.IsNullOrEmpty(selectedAddress.Apartamento) ? "" : $"{selectedAddress.Apartamento}\n"));
+                    Console.WriteLine("Menu Options:");
+                    Console.WriteLine("1. Select / List UIDs");
+                    Console.WriteLine("2. Reserve");
+                    Console.WriteLine("3. Activate");
+                    Console.WriteLine("4. Deactivate");
+                    Console.WriteLine("5. Terminate");
+                }
 
+                Console.WriteLine("0. Exit");
+
+                Console.Write("Enter your choice: ");
                 string choice = Console.ReadLine();
 
-                string adressUid;
-                List<OperatorActionUidReply> UIDS = new List<OperatorActionUidReply>();
+                Console.WriteLine();
 
-                switch (choice)
-                {
+                switch (choice) {
+                    case "0":
+                        Console.WriteLine("Exiting the program...");
+                        Console.WriteLine("Press any key to continue...");
+                        return;
                     case "1":
+                        bool done = false;
+                        Console.Clear();
+                        Console.WriteLine("Listing UIDs");
 
-                        using (var call = operatorClient.ListUid(new OperatorActionUidRequest
-                        {
-                            Operator = user.Username,
-                            Token = authToken
-                        }))
-                        {
-                            while (await call.ResponseStream.MoveNext(CancellationToken.None))
-                            {
-                                var curr = call.ResponseStream.Current;
-                                UIDS.Add(curr);
-                                Console.WriteLine($"{curr.Municipio} {curr.Rua} {curr.Numero} {curr.Apartamento ?? ""} the uid code is: {curr.Uid}");
-
-                            }
+                        if (UIDS.Count == 0) {
+                            Console.WriteLine("There are no UIDs in the DB!");
+                            Console.ReadKey();
+                            Console.WriteLine("Press any key to continue...");
+                            break;
                         }
 
-                        Console.WriteLine("Que Morada Deseja Ativar :");
-                        do
-                        {
-                            adressUid = Console.ReadLine();
-                        } while (!UIDS.Any(m => m.Uid == adressUid));
+                        while (!done) {
 
-                        var call2 = operatorClient.Activate(new OperatorActionsRequest
-                        {
-                            Operator = user.Username,
-                            Token = authToken,
-                            Uid = adressUid
-                        });
+                            Console.WriteLine("Select an option:");
+                            Console.WriteLine();
 
-                        Console.WriteLine($"{call2.Status} and the estimated time is {call2.Et}");
-                        UIDS.Clear();
+                            foreach (var item in UIDS) {
+                                Console.WriteLine($"{item.Key}. Domicilio: {item.Value.Municipio} - {item.Value.Rua} {item.Value.Numero} " + (String.IsNullOrEmpty(item.Value.Apartamento) ? "" : $"{item.Value.Apartamento}"));
+                            }
+
+                            Console.WriteLine("0. Exit");
+                            Console.WriteLine();
+
+                            Console.Write("Enter your choice: ");
+                            string ichoice = Console.ReadLine();
+
+                            Console.WriteLine();
+
+                            if (ichoice == "0") {
+                                done = true;
+                                break;
+                            }
+
+                            if (int.TryParse(ichoice, out int selectedOption)) {
+                                if (UIDS.ContainsKey(selectedOption)) {
+                                    selectedAddress = UIDS[selectedOption];
+                                    done = true;
+                                } else {
+                                    Console.WriteLine("Invalid choice. Please try again.");
+                                }
+                            } else {
+                                Console.WriteLine("Invalid choice. Please try again.");
+                            }
+
+                            Console.WriteLine();
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                        }
+
+
+
                         break;
                     case "2":
-                        using (var listUID = operatorClient.ListUid(new OperatorActionUidRequest
-                        {
-                            Operator = user.Username,
-                            Token = authToken
-                        }))
-                        {
-                            while (await listUID.ResponseStream.MoveNext(CancellationToken.None))
-                            {
-                                var curr = listUID.ResponseStream.Current;
-                                UIDS.Add(curr);
-                                Console.WriteLine($"{curr.Municipio} {curr.Rua} {curr.Numero} {curr.Apartamento ?? ""} the uid code is: {curr.Uid}");
+                        string? mun, rua, n, apt, mod;
+                        Console.Write("Reserving address\nMunicipio:");
+                        mun = Console.ReadLine();
+                        Console.Write("Rua: ");
+                        rua = Console.ReadLine();
+                        Console.Write("Numero:");
+                        n = Console.ReadLine();
+                        Console.Write("Apartamento: ");
+                        apt = Console.ReadLine();
+                        Console.Write("Modalidade: ");
+                        mod = Console.ReadLine();
 
-                            }
-                        }
-
-
-                        Console.WriteLine("Que Morada Deseja Ativar :");
-                        do
-                        {
-                            adressUid = Console.ReadLine();
-                        } while (!UIDS.Any(m => m.Uid == adressUid));
-
-                        var call3 = operatorClient.Deactivate(new OperatorActionsRequest
-                        {
+                        var morada = new OperatorActionsReserveRequest {
                             Operator = user.Username,
                             Token = authToken,
-                            Uid = adressUid
-                        });
+                            Municipio = mun,
+                            Rua = rua,
+                            Numero = n,
+                            Apartamento = apt,
+                            Modalidade = mod
+                        };
 
-                        Console.WriteLine($"{call3.Status} and the estimated time is {call3.Et}");
-
-                        UIDS.Clear();
-
+                        var reply = operatorClient.Reserve(morada);
+                        if (reply.Status == "OK") {
+                            selectedAddress = new OperatorActionUidReply {
+                                Rua = rua,
+                                Apartamento = apt,
+                                Municipio = mun,
+                                Numero = n,
+                                Uid = reply.Uid
+                            };
+                        Console.WriteLine($"{reply.Status} - Successfully reserved!");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();                        
+                        } else {
+                            Console.WriteLine($"{reply.Status} - Not reserved!");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                        }
                         break;
                     case "3":
-                        Console.WriteLine("RESERVE");
+                        if (selectedAddress != null) {
+                            Console.WriteLine("Scheduling activation of address...");
+
+                            var call2 = operatorClient.Activate(new OperatorActionsRequest {
+                                Operator = user.Username,
+                                Token = authToken,
+                                Uid = selectedAddress.Uid
+                            });
+
+
+                            if (call2.Status == "OK") {
+                                Console.WriteLine($"Activation scheduled successfully. ET: {call2.Et}s");
+                                selectedAddress = null;
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                            } else {
+                                Console.WriteLine($"{call2.Status}");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                            }
+                        } else {
+                            Console.WriteLine("Invalid choice. Please try again.");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                        }
+
                         break;
                     case "4":
-                        Console.WriteLine("TERMINAR");
+                        if (selectedAddress != null) {
+                            Console.WriteLine("Scheduling deactivation of address...");
+
+                            var call2 = operatorClient.Deactivate(new OperatorActionsRequest {
+                                Operator = user.Username,
+                                Token = authToken,
+                                Uid = selectedAddress.Uid
+                            });
+
+
+                            if (call2.Status == "OK") {
+                                Console.WriteLine($"Deactivation scheduled successfully. ET: {call2.Et}s");
+                                selectedAddress = null;
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                            } else {
+                                Console.WriteLine($"{call2.Status}");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                            }
+                        } else {
+                            Console.WriteLine("Invalid choice. Please try again.");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                        }
+
                         break;
                     case "5":
-                        exit = true;
-                        Console.WriteLine("Exiting the program...");
+                        if (selectedAddress != null) {
+                            Console.WriteLine("Scheduling termination of address...");
+
+                            var call2 = operatorClient.Terminate(new OperatorActionsRequest {
+                                Operator = user.Username,
+                                Token = authToken,
+                                Uid = selectedAddress.Uid
+                            });
+
+
+                            if (call2.Status == "OK") {
+                                Console.WriteLine($"Termination scheduled successfully. ET: {call2.Et}s");
+                                selectedAddress = null;
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                            } else {
+                                Console.WriteLine($"{call2.Status}");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                            }
+                        } else {
+                            Console.WriteLine("Invalid choice. Please try again.");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                        }
+
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                         break;
                 }
             }

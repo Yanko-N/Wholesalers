@@ -19,7 +19,7 @@ namespace GrpcService.Services
 
                 if (logs?.Token == request.Token)
                 {
-                    var UID = DbContext.UIDS.Include(m => m.UID).Include(m => m.Cobertura).FirstOrDefault(u => u.UID == request.Uid);
+                    var UID = DbContext.UIDS.Include(m => m.Cobertura).FirstOrDefault(u => u.UID == request.Uid);
                     var morada = DbContext.Coberturas.FirstOrDefault(m => m.Id == UID.Cobertura.Id);
                     if (morada != null && (morada.Estado == "RESERVED" || morada.Estado == " DEACTIVATED"))
                     {
@@ -80,9 +80,9 @@ namespace GrpcService.Services
 
                 if (logs?.Token == request.Token)
                 {
-                    var UID = DbContext.UIDS.Include(m => m.UID).Include(m => m.Cobertura).FirstOrDefault(u => u.UID == request.Uid);
+                    var UID = DbContext.UIDS.Include(m => m.Cobertura).FirstOrDefault(u => u.UID == request.Uid);
                     var morada = DbContext.Coberturas.FirstOrDefault(m => m.Id == UID.Cobertura.Id);
-                    if (morada != null && (morada.Estado == " ACTIVE"))
+                    if (morada != null && (morada.Estado == "ACTIVE"))
                     {
                         Thread thread = new Thread(() => Desativar(morada, request));
                         thread.Start();
@@ -133,68 +133,86 @@ namespace GrpcService.Services
             }
         }
 
-        public override Task<OperatorActionsReserveReply> Reserve(OperatorActionsReserveRequest request, ServerCallContext context)
-        {
+        public override async Task<OperatorActionsReserveReply> Reserve(OperatorActionsReserveRequest request,
+            ServerCallContext context) {
+                if (!String.IsNullOrWhiteSpace(request.Operator) && !String.IsNullOrWhiteSpace(request.Token)) {
+                var logs = DbContext.UserLoginLogs.OrderByDescending(d => d.Date)
+                    .FirstOrDefault(u => u.User == request.Operator);
 
-            if (!String.IsNullOrWhiteSpace(request.Operator) && !String.IsNullOrWhiteSpace(request.Token))
-            {
-                var logs = DbContext.UserLoginLogs.OrderByDescending(d => d.Date).FirstOrDefault(u => u.User == request.Operator);
-
-                if (logs?.Token == request.Token)
-                {
+                if (logs?.Token == request.Token) {
 
                     //Aqui será feito a reserva duma morada
-                    if (request.Apartamento == "")
-                    {
-                        request.Apartamento = null;
-                    }
-                    var morada = DbContext.Coberturas.FirstOrDefault(m => m.Rua == request.Rua && m.Apartamento == request.Apartamento && m.Numero == request.Numero && m.Operador == request.Operator && m.Municipio == request.Municipio);
+                    string? apt;
+                    if (request.Apartamento == "") {
+                        apt = "";
+                    } else apt = request.Apartamento;
 
-                    if (morada != null)
-                    {
-                        Thread thread= new Thread(()=> Reservar(morada, request));
-                        thread.Start();
 
-                        var response = new OperatorActionsReserveReply
-                        {
+                        var morada = DbContext.Coberturas.FirstOrDefault(m =>
+                            m.Rua == request.Rua && m.Apartamento == apt && m.Numero == request.Numero &&
+                            m.Operador == request.Operator && m.Municipio == request.Municipio &&
+                            m.Estado != "TERMINATED");
+                    
+
+                    if (morada != null) {
+
+                        if (!DbContext.UIDS.Include(c => c.Cobertura).Any(c => c.Cobertura == morada)) {
+
+
+                        morada.Modalidade = request.Modalidade;
+                        morada.Estado = "RESERVED";
+                        var logOperatorEvent = new OperatorActionEvents {
+                            Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
+                            Action = "RESERVE",
+                            Cobertura = morada,
+                            Date = DateTime.Now
+                        };
+
+                        var entryUID = new Uid {
+                            Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
+                            Cobertura = morada,
+                            UID = Guid.NewGuid().ToString().Replace("-", "")
+                        };
+
+                        DbContext.OperatorActionEvents.Add(logOperatorEvent);
+                        DbContext.UIDS.Add(entryUID);
+                        DbContext.Update(morada);
+
+                        await DbContext.SaveChangesAsync();
+                        }
+
+
+                        var response = new OperatorActionsReserveReply {
                             Status = "OK",
-                            Uid = DbContext.UIDS.Include(m=>m.Cobertura).FirstOrDefault(m => m.Cobertura == morada).UID
+                            Uid = DbContext.UIDS.Include(m => m.Cobertura).FirstOrDefault(m => m.Cobertura == morada)
+                                .UID
 
                         };
-                        return Task.FromResult(response);
-                    }
-                    else
-                    {
-                        var response = new OperatorActionsReserveReply
-                        {
+                        return await Task.FromResult(response);
+                    } else {
+                        var response = new OperatorActionsReserveReply {
                             Status = "ERROR",
 
                         };
-                        return Task.FromResult(response);
+                        return await Task.FromResult(response);
                     }
-                }
-                else
-                {
-                    var response = new OperatorActionsReserveReply
-                    {
+                    
+                } else {
+                    var response = new OperatorActionsReserveReply {
                         Status = "ERROR",
 
                     };
-                    return Task.FromResult(response);
+                    return await Task.FromResult(response);
 
                 }
-            }
-            else
-            {
-                var response = new OperatorActionsReserveReply
-                {
+            } else {
+                var response = new OperatorActionsReserveReply {
                     Status = "ERROR",
 
                 };
-                return Task.FromResult(response);
-
+                return await Task.FromResult(response);
             }
-        }
+            }
 
         public override Task<OperatorActionsReply> Terminate(OperatorActionsRequest request, ServerCallContext context)
         {
@@ -206,10 +224,10 @@ namespace GrpcService.Services
                 {
 
                     //Aqui será feito a terminação duma morada
-                    var uid = DbContext.UIDS.Include(m => m.UID).FirstOrDefault(m => m.UID == request.Uid);
+                    var uid = DbContext.UIDS.Include(c=> c.Cobertura).FirstOrDefault(m => m.UID == request.Uid);
                     var morada = DbContext.Coberturas.FirstOrDefault(m => m.Id == uid.Cobertura.Id);
 
-                    if (morada != null && morada.Estado == "ACTIVE")
+                    if (morada != null && morada.Estado == "DEACTIVATED")
                     {
 
                         Thread thread = new Thread(() => Terminar(morada, request));
@@ -269,7 +287,7 @@ namespace GrpcService.Services
 
                 if (logs?.Token == request.Token)
                 {
-                    List<Uid> lista = DbContext.UIDS.Include(o => o.Operator)
+                    List<Uid> lista = DbContext.UIDS.Include(c=> c.Cobertura).Include(o => o.Operator)
                         .Where(o => o.Operator.Username == request.Operator).ToList();
 
                     foreach (var item in lista)
@@ -302,7 +320,7 @@ namespace GrpcService.Services
             var logOperatorEvent = new OperatorActionEvents
             {
                 Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
-                Action = "ACTIVE",
+                Action = "ACTIVATE",
                 Cobertura = morada,
                 Date = DateTime.Now
             };
@@ -330,39 +348,12 @@ namespace GrpcService.Services
             var logOperatorEvent = new OperatorActionEvents
             {
                 Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
-                Action = "DEACTIVATED",
+                Action = "DEACTIVATE",
                 Cobertura = morada,
                 Date = DateTime.Now
             };
 
             var message = $"The {request.Operator} was DEACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
-
-
-
-
-            DbContext.OperatorActionEvents.Add(logOperatorEvent);
-            DbContext.Update(morada);
-
-            DbContext.SaveChangesAsync();
-
-
-            RabbitService.SendMessage(request.Operator, message);
-        }
-        public  void Reservar(Cobertura morada,OperatorActionsReserveRequest request)
-        {
-            Thread.Sleep(3);
-            morada.Modalidade = request.Modalidade;
-            morada.Estado = "RESERVED";
-            //Apos a reserva será adicionado aos LOGS 
-            var logOperatorEvent = new OperatorActionEvents
-            {
-                Operator = DbContext.Users.FirstOrDefault(u => u.Username == request.Operator),
-                Action = "RESERVE",
-                Cobertura = morada,
-                Date = DateTime.Now
-            };
-
-            var message = $"The {request.Operator} was RESERVED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
 
 
 
