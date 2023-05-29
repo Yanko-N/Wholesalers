@@ -7,12 +7,9 @@ using System;
 using System.Text;
 using System.Threading.Channels;
 
-namespace GrpcClient
-{
-    class Program
-    {
-        static async Task Main(string[] args)
-        {
+namespace GrpcClient {
+    class Program {
+        static async Task Main(string[] args) {
 
             var channel = GrpcChannel.ForAddress("https://localhost:7275");
             var user = new AuthUser();
@@ -25,8 +22,7 @@ namespace GrpcClient
                 authToken = task.Result.authToken ?? "";
             }).Wait();
 
-            if (authToken == "")
-            {
+            if (authToken == "") {
                 Console.WriteLine("Exiting the program...");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
@@ -34,32 +30,27 @@ namespace GrpcClient
             }
 
 
-            if (isAdmin)
-            {
+            if (isAdmin) {
                 await AdminMenu(channel, user, authToken);
-            }
-            else
-            {
+            } else {
                 await OperatorMenu(channel, user, authToken);
             }
-            Console.ReadLine();
         }
 
-        static async Task OperatorMenu(GrpcChannel channel, AuthUser user, string authToken)
-        {
+        static async Task OperatorMenu(GrpcChannel channel, AuthUser user, string authToken) {
             var operatorClient = new OperatorActions.OperatorActionsClient(channel);
 
             Dictionary<int, OperatorActionUidReply> UIDS = new Dictionary<int, OperatorActionUidReply>();
             OperatorActionUidReply? selectedAddress = null;
-            
+
             bool exit = false;
             while (!exit) {
                 int i = 0;
                 UIDS.Clear();
                 using (var call = operatorClient.ListUid(new OperatorActionUidRequest {
-                           Operator = user.Username,
-                           Token = authToken
-                       })) {
+                    Operator = user.Username,
+                    Token = authToken
+                })) {
                     while (await call.ResponseStream.MoveNext(CancellationToken.None)) {
                         i++;
                         var curr = call.ResponseStream.Current;
@@ -179,9 +170,9 @@ namespace GrpcClient
                                 Numero = n,
                                 Uid = reply.Uid
                             };
-                        Console.WriteLine($"{reply.Status} - Successfully reserved!");
-                        Console.WriteLine("Press any key to continue...");
-                        Console.ReadKey();                        
+                            Console.WriteLine($"{reply.Status} - Successfully reserved!");
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
                         } else {
                             Console.WriteLine($"{reply.Status} - Not reserved!");
                             Console.WriteLine("Press any key to continue...");
@@ -243,12 +234,10 @@ namespace GrpcClient
                             Console.ReadKey();
                         }
 
-
-                        Console.WriteLine("Que Morada Deseja Ativar :");
-                        do
-                        {
-                            adressUid = Console.ReadLine();
-                        } while (!UIDS.Any(m => m.Uid == adressUid));
+                        break;
+                    case "5":
+                        if (selectedAddress != null) {
+                            Console.WriteLine("Scheduling termination of address...");
 
                             var call2 = operatorClient.Terminate(new OperatorActionsRequest {
                                 Operator = user.Username,
@@ -274,29 +263,22 @@ namespace GrpcClient
                         }
 
                         break;
-                    case "3":
-                        Console.WriteLine("RESERVE");
-                        break;
-                    case "4":
-                        Console.WriteLine("TERMINAR");
-                        break;
-                    case "5":
-                        exit = true;
-                        Console.WriteLine("Exiting the program...");
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                         break;
                 }
             }
         }
 
-        static async Task<(AuthUser user, bool? isAdmin, string? authToken)> LoginMenu(GrpcChannel channel)
-        {
+        static async Task<(AuthUser user, bool? isAdmin, string? authToken)> LoginMenu(GrpcChannel channel) {
             var user = new AuthUser();
             var authClient = new Auth.AuthClient(channel);
             string? authToken = null;
             bool? isAdmin = null;
             bool exit = false;
-            while (!exit)
-            {
+            while (!exit) {
                 Console.Clear();
                 Console.WriteLine("Welcome");
                 Console.WriteLine("Please select an option:");
@@ -310,8 +292,7 @@ namespace GrpcClient
 
                 AuthReply reply = new AuthReply();
 
-                switch (choice)
-                {
+                switch (choice) {
                     case "1":   //LOGIN
                         Console.Clear();
 
@@ -322,8 +303,7 @@ namespace GrpcClient
 
                         reply = await authClient.LogInAsync(user);
                         Console.WriteLine($"{reply.Status} - {reply.Message}");
-                        if (reply.Status == "OK")
-                        {
+                        if (reply.Status == "OK") {
                             isAdmin = reply.IsAdmin;
                             authToken = reply.Token;
                             exit = true;
@@ -336,8 +316,7 @@ namespace GrpcClient
 
                     case "2":   //REGISTO
                         string confirm;
-                        do
-                        {
+                        do {
                             Console.Clear();
 
                             Console.Write("Username: ");
@@ -374,13 +353,11 @@ namespace GrpcClient
             return (user, isAdmin, authToken);
         }
 
-        static async Task AdminMenu(GrpcChannel channel, AuthUser user, string authToken)
-        {
+        static async Task AdminMenu(GrpcChannel channel, AuthUser user, string authToken) {
             bool exit = false;
             var adminClient = new AdminActions.AdminActionsClient(channel);
 
-            while (!exit)
-            {
+            while (!exit) {
                 Console.Clear();
 
                 Console.WriteLine("Admin Options:");
@@ -392,19 +369,15 @@ namespace GrpcClient
 
                 string choice = Console.ReadLine();
 
-                switch (choice)
-                {
+                switch (choice) {
                     case "1":
                         Console.Clear();
                         Console.WriteLine("Listing all Coberturas\n");
-                        using (var call = adminClient.ListAllCoberturas(new AdminActionsListAllCoberturas
-                        {
+                        using (var call = adminClient.ListAllCoberturas(new AdminActionsListAllCoberturas {
                             Operator = user.Username,
                             Token = authToken
-                        }))
-                        {
-                            while (await call.ResponseStream.MoveNext(CancellationToken.None))
-                            {
+                        })) {
+                            while (await call.ResponseStream.MoveNext(CancellationToken.None)) {
                                 var curr = call.ResponseStream.Current;
 
                                 Console.WriteLine($"{curr.Operator} - {curr.Municipio} {curr.Rua} {curr.Numero} {curr.Apartamento ?? ""} {curr.Estado}");
@@ -418,14 +391,12 @@ namespace GrpcClient
                         break;
                     case "2":
                         string op;
-                        do
-                        {
+                        do {
                             Console.Clear();
                             Console.Write("Operator to search: ");
                             op = Console.ReadLine();
 
-                            if (string.IsNullOrEmpty(op))
-                            {
+                            if (string.IsNullOrEmpty(op)) {
                                 Console.WriteLine("Operator name cannot be empty. Please try again.");
                                 Console.WriteLine("Press any key to continue...");
                                 Console.ReadKey();
@@ -434,15 +405,12 @@ namespace GrpcClient
 
 
                         Console.WriteLine($"Listing all Coberturas by Operator ({op})\n");
-                        using (var call = adminClient.ListCoberturasOperator(new AdminActionsCoberturasOperatorRequest
-                        {
+                        using (var call = adminClient.ListCoberturasOperator(new AdminActionsCoberturasOperatorRequest {
                             Operator = user.Username,
                             Token = authToken,
                             Operatorsearch = op
-                        }))
-                        {
-                            while (await call.ResponseStream.MoveNext(CancellationToken.None))
-                            {
+                        })) {
+                            while (await call.ResponseStream.MoveNext(CancellationToken.None)) {
                                 var curr = call.ResponseStream.Current;
 
                                 Console.WriteLine($"{curr.Operator} - {curr.Municipio} {curr.Rua} {curr.Numero} {curr.Apartamento ?? ""} {curr.Estado}");
@@ -464,8 +432,7 @@ namespace GrpcClient
                         bool terminated = false;
 
                         bool done = false;
-                        while (!done)
-                        {
+                        while (!done) {
                             Console.Clear(); // Clear the console screen
 
                             Console.WriteLine("Select services status to display:");
@@ -478,8 +445,7 @@ namespace GrpcClient
                             Console.Write("Enter your choice: ");
                             string service = Console.ReadLine();
 
-                            switch (service)
-                            {
+                            switch (service) {
                                 case "1":
                                     active = !active;
                                     Console.WriteLine("Active " + (active ? "selected." : "deselected."));
@@ -518,8 +484,7 @@ namespace GrpcClient
 
                         Console.WriteLine("Services to be displayed: " + string.Join(", ", selectedServices) + "\n");
 
-                        using (var call = adminClient.ListServices(new AdminActionsServicesRequest()
-                        {
+                        using (var call = adminClient.ListServices(new AdminActionsServicesRequest() {
                             Operator = user.Username,
                             Token = authToken,
                             Active = active,
@@ -527,10 +492,8 @@ namespace GrpcClient
                             Reserved = reserved,
                             Terminated = terminated
 
-                        }))
-                        {
-                            while (await call.ResponseStream.MoveNext(CancellationToken.None))
-                            {
+                        })) {
+                            while (await call.ResponseStream.MoveNext(CancellationToken.None)) {
                                 var curr = call.ResponseStream.Current;
 
                                 Console.WriteLine($"{curr.Operator} - {curr.Timestamp} - {curr.Action} - {curr.Municipio} {curr.Rua} {curr.Numero} {curr.Apartamento ?? ""}");
@@ -545,6 +508,8 @@ namespace GrpcClient
                     case "4":
                         exit = true;
                         Console.WriteLine("Exiting the program...");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                         break;
                     default:
                         Console.WriteLine("Invalid choice. Please try again.");

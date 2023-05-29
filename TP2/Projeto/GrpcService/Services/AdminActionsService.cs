@@ -92,6 +92,7 @@ namespace GrpcService.Services {
                             services.AddRange(dataContext.OperatorActionEvents.Include(s => s.Cobertura)
                                 .Include(s => s.Operator).Where(s => s.Action == "RESERVE").ToList());
 
+                        services = services.OrderByDescending(d => d.Date).ToList();
 
                         foreach (var s in services) {
 
