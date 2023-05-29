@@ -31,11 +31,13 @@ namespace GrpcClient {
 
 
             if (isAdmin) {
-                await AdminMenu(channel, user, authToken);
                 RabbitService.ConnectRabitMQ("");
+
+                await AdminMenu(channel, user, authToken);
             } else {
-                await OperatorMenu(channel, user, authToken);
                 RabbitService.ConnectRabitMQ(user.Username);
+
+                await OperatorMenu(channel, user, authToken);
 
             }
         }
@@ -67,7 +69,7 @@ namespace GrpcClient {
                     Console.WriteLine("1. Select / List UIDs");
                     Console.WriteLine("2. Reserve");
                 } else {
-                    Console.WriteLine($"Selected Adress: {selectedAddress.Municipio} - {selectedAddress.Rua} {selectedAddress.Numero} " + (String.IsNullOrEmpty(selectedAddress.Apartamento) ? "" : $"{selectedAddress.Apartamento}\n"));
+                    Console.WriteLine($"Selected Adress: {selectedAddress.Municipio} - {selectedAddress.Rua} {selectedAddress.Numero} " + (String.IsNullOrEmpty(selectedAddress.Apartamento) ? "" : $"{selectedAddress.Apartamento} \n"));
                     Console.WriteLine("Menu Options:");
                     Console.WriteLine("1. Select / List UIDs");
                     Console.WriteLine("2. Reserve");

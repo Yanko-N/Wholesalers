@@ -21,7 +21,7 @@ namespace GrpcService.Services
                 {
                     var UID = DbContext.UIDS.Include(m => m.Cobertura).FirstOrDefault(u => u.UID == request.Uid);
                     var morada = DbContext.Coberturas.FirstOrDefault(m => m.Id == UID.Cobertura.Id);
-                    if (morada != null && (morada.Estado == "RESERVED" || morada.Estado == " DEACTIVATED"))
+                    if (morada != null && (morada.Estado == "RESERVED" || morada.Estado == "DEACTIVATED"))
                     {
 
                         Thread thread = new Thread(() => Active(morada, request));
@@ -40,7 +40,7 @@ namespace GrpcService.Services
                     {
                         var response = new OperatorActionsReply
                         {
-                            Status = "ERROR The adress or is Reserved or is Deactivated",
+                            Status = "ERROR The adress isn't Reserved or is Deactivated",
                             Et = 0
                         };
 
@@ -324,7 +324,8 @@ namespace GrpcService.Services
                 Date = DateTime.Now
             };
 
-            var message = $"The {request.Operator} was ACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+            var message = $"The {request.Operator} was ACTIVATED the adress {morada.Numero},{morada.Rua},{morada.Municipio},";
+
 
 
 
@@ -340,7 +341,7 @@ namespace GrpcService.Services
         public  void Desativar(Cobertura morada,OperatorActionsRequest request)
         {
             Thread.Sleep(3000);
-            //N está ASSINCRONO
+            
             morada.Estado = "DEACTIVATED";
 
             //Apos a reserva será adicionado aos LOGS 
@@ -352,7 +353,7 @@ namespace GrpcService.Services
                 Date = DateTime.Now
             };
 
-            var message = $"The {request.Operator} was DEACTIVATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+            var message = $"The {request.Operator} was DEACTIVATED the adress {morada.Numero},{morada.Rua},{morada.Municipio},";
 
 
 
@@ -378,7 +379,8 @@ namespace GrpcService.Services
                 Date = DateTime.Now
             };
 
-            var message = $"The {request.Operator} was TERMINATED the adress {morada.Numero},{morada.Apartamento},{morada.Municipio}";
+            var message = $"The {request.Operator} was TERMINATE the adress {morada.Numero},{morada.Rua},{morada.Municipio},";
+
 
             DbContext.OperatorActionEvents.Add(logOperatorEvent);
             DbContext.Update(morada);
