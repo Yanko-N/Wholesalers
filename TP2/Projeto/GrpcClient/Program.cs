@@ -243,10 +243,12 @@ namespace GrpcClient
                             Console.ReadKey();
                         }
 
-                        break;
-                    case "5":
-                        if (selectedAddress != null) {
-                            Console.WriteLine("Scheduling termination of address...");
+
+                        Console.WriteLine("Que Morada Deseja Ativar :");
+                        do
+                        {
+                            adressUid = Console.ReadLine();
+                        } while (!UIDS.Any(m => m.Uid == adressUid));
 
                             var call2 = operatorClient.Terminate(new OperatorActionsRequest {
                                 Operator = user.Username,
@@ -272,10 +274,15 @@ namespace GrpcClient
                         }
 
                         break;
-                    default:
-                        Console.WriteLine("Invalid choice. Please try again.");
-                        Console.WriteLine("Press any key to continue...");
-                        Console.ReadKey();
+                    case "3":
+                        Console.WriteLine("RESERVE");
+                        break;
+                    case "4":
+                        Console.WriteLine("TERMINAR");
+                        break;
+                    case "5":
+                        exit = true;
+                        Console.WriteLine("Exiting the program...");
                         break;
                 }
             }
