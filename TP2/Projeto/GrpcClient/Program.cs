@@ -31,7 +31,6 @@ namespace GrpcClient {
 
 
             if (isAdmin) {
-                RabbitService.ConnectRabitMQ("");
 
                 await AdminMenu(channel, user, authToken);
             } else {

@@ -146,18 +146,28 @@ namespace GrpcService.Services
                         apt = "";
                     } else apt = request.Apartamento;
 
+                    if (DbContext.Coberturas.Any(m =>
+                            m.Rua == request.Rua && m.Apartamento == apt && m.Numero == request.Numero && m.Municipio == request.Municipio &&
+                            m.Estado != "TERMINATED"))
+                    {
+                        var response = new OperatorActionsReserveReply
+                        {
+                            Status = "ERROR",
 
-                        var morada = DbContext.Coberturas.FirstOrDefault(m =>
+                        };
+                        return await Task.FromResult(response);
+                    }
+                    var morada = DbContext.Coberturas.FirstOrDefault(m =>
                             m.Rua == request.Rua && m.Apartamento == apt && m.Numero == request.Numero &&
-                            m.Operador == request.Operator && m.Municipio == request.Municipio &&
-                            m.Estado != "TERMINATED");
+                             m.Municipio == request.Municipio &&
+                            m.Estado == "TERMINATED");
                     
 
                     if (morada != null) {
 
-                        if (!DbContext.UIDS.Include(c => c.Cobertura).Any(c => c.Cobertura == morada)) {
-
-
+                        var uid = DbContext.UIDS.Include(c => c.Cobertura).FirstOrDefault(c => c.Cobertura == morada);
+                        if(uid != null) DbContext.UIDS.Remove(uid);
+                        morada.Operador = request.Operator;
                         morada.Modalidade = request.Modalidade;
                         morada.Estado = "RESERVED";
                         var logOperatorEvent = new OperatorActionEvents {
@@ -178,16 +188,20 @@ namespace GrpcService.Services
                         DbContext.Update(morada);
 
                         await DbContext.SaveChangesAsync();
-                        }
 
-
-                        var response = new OperatorActionsReserveReply {
+                            var response = new OperatorActionsReserveReply {
                             Status = "OK",
                             Uid = DbContext.UIDS.Include(m => m.Cobertura).FirstOrDefault(m => m.Cobertura == morada)
                                 .UID
 
                         };
-                        return await Task.FromResult(response);
+                            return await Task.FromResult(response);
+
+                 
+                       
+
+
+
                     } else {
                         var response = new OperatorActionsReserveReply {
                             Status = "ERROR",
